@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GlassQuiz | Portal</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="glass-panel" id="loginBox">
+        <h2>GlassQuiz Access</h2>
+        <input type="text" id="userId" placeholder="User ID (Admin: admin@java.in)">
+        <input type="password" id="pwd" placeholder="Password">
+        <button onclick="login()">Sign In</button>
+        <p style="text-align: center; margin-top: 15px; cursor:pointer;" onclick="toggleAuth()">Need a Student Account? Register</p>
+    </div>
+
+    <div class="glass-panel hidden" id="regBox">
+        <h2>Student Registration</h2>
+        <input type="text" id="regUserId" placeholder="Create User ID">
+        <input type="password" id="regPwd" placeholder="Password">
+        <input type="password" id="regCpwd" placeholder="Confirm Password">
+        <button onclick="register()">Create Account</button>
+        <p style="text-align: center; margin-top: 15px; cursor:pointer;" onclick="toggleAuth()">Back to Sign In</p>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

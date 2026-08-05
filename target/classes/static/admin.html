@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | GlassQuiz</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="glass-panel dashboard">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h2>Admin Control Center</h2>
+            <button onclick="logout()" style="width: auto; padding: 8px 16px;">Logout</button>
+        </div>
+        
+        <div class="card-grid">
+            <div class="glass-card" style="grid-column: span 2;">
+                <h3>Create Unlimited MCQ Test</h3>
+                <input type="text" id="testTitle" placeholder="Enter Test Title">
+                <label style="display: block; margin: 10px 0;">
+                    <input type="checkbox" id="negMark"> Enable -1 Negative Marking
+                </label>
+                
+                <h4 style="margin-top: 20px;">Add Questions to Test</h4>
+                <div id="questionsBuilder"></div>
+                
+                <button onclick="addQuestionField()" style="background: rgba(255,255,255,0.2); margin-bottom: 10px;">+ Add Another Question</button>
+                <button onclick="createTest()" style="background: linear-gradient(45deg, #11998e, #38ef7d);">Publish Test</button>
+            </div>
+
+            <div class="glass-card">
+                <h3>Managed Tests & Share Links</h3>
+                <button onclick="loadAdminTests()">Refresh Tests</button>
+                <div id="adminTestList" style="margin-top: 15px;"></div>
+            </div>
+
+            <div class="glass-card">
+                <h3>Analytics & Logs</h3>
+                <button onclick="downloadXLS()" style="background: linear-gradient(45deg, #f5af19, #f12711);">Download Results (.XLS)</button>
+                <button onclick="loadLogs()" style="margin-top: 10px;">View System Logs</button>
+                <div id="logsContainer" style="margin-top: 15px; max-height: 200px; overflow-y: auto; font-size: 12px;"></div>
+            </div>
+        </div>
+
+        <h3 style="margin-top: 30px;">Student Attempt Performance Data</h3>
+        <div id="attemptsTable" style="margin-top: 15px; overflow-x: auto;"></div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
