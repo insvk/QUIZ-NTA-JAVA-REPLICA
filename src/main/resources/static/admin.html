@@ -14,6 +14,7 @@
         </div>
         
         <div class="card-grid">
+            <!-- Test Creation -->
             <div class="glass-card" style="grid-column: span 2;">
                 <h3>Create Unlimited MCQ Test</h3>
                 <input type="text" id="testTitle" placeholder="Enter Test Title">
@@ -28,17 +29,31 @@
                 <button onclick="createTest()" style="background: linear-gradient(45deg, #11998e, #38ef7d);">Publish Test</button>
             </div>
 
+            <!-- Manage Active Tests -->
             <div class="glass-card">
                 <h3>Managed Tests & Share Links</h3>
                 <button onclick="loadAdminTests()">Refresh Tests</button>
                 <div id="adminTestList" style="margin-top: 15px;"></div>
             </div>
 
+            <!-- Analytics & Export -->
             <div class="glass-card">
-                <h3>Analytics & Logs</h3>
+                <h3>Analytics & System Logs</h3>
                 <button onclick="downloadXLS()" style="background: linear-gradient(45deg, #f5af19, #f12711);">Download Results (.XLS)</button>
                 <button onclick="loadLogs()" style="margin-top: 10px;">View System Logs</button>
                 <div id="logsContainer" style="margin-top: 15px; max-height: 200px; overflow-y: auto; font-size: 12px;"></div>
+            </div>
+
+            <!-- Account Management System -->
+            <div class="glass-card" style="grid-column: span 3;">
+                <h3>User Account Management (Students)</h3>
+                <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
+                    <input type="text" id="adminNewStudentId" placeholder="Student User ID" style="margin: 0; flex: 1;">
+                    <input type="password" id="adminNewStudentPwd" placeholder="Password" style="margin: 0; flex: 1;">
+                    <button onclick="adminCreateUser()" style="width: auto; padding: 10px 20px; margin: 0; background: linear-gradient(45deg, #11998e, #38ef7d);">+ Create Student</button>
+                    <button onclick="loadUsers()" style="width: auto; padding: 10px 20px; margin: 0; background: rgba(255,255,255,0.2);">Refresh List</button>
+                </div>
+                <div id="usersTableContainer" style="overflow-x: auto;"></div>
             </div>
         </div>
 

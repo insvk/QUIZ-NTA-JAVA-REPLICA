@@ -1,4 +1,4 @@
-const API_URL = window.location.origin.includes('localhost') ? 'https://quiz-java-r217.onrender.com/' : '/api';
+const API_URL = window.location.origin.includes('localhost') ? 'https://quiz-java-r217.onrender.com' : '/api';
 
 window.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -15,6 +15,7 @@ window.addEventListener('DOMContentLoaded', () => {
         addQuestionField();
         loadAdminTests();
         loadAttempts();
+        loadUsers();
     } else if (window.location.pathname.includes('student.html')) {
         if (localStorage.getItem('role') !== 'STUDENT') window.location.href = 'index.html';
         document.getElementById('welcomeText').innerText = `Welcome, ${localStorage.getItem('userId')}`;
@@ -31,27 +32,32 @@ function toggleAuth() {
 }
 
 async function login() {
-    const uid = document.getElementById('userId').value;
-    const pwd = document.getElementById('pwd').value;
+    const uid = document.getElementById('userId').value.trim();
+    const pwd = document.getElementById('pwd').value.trim();
 
-    const res = await fetch(`${API_URL}/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: uid, password: pwd })
-    });
+    try {
+        const res = await fetch(`${API_URL}/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: uid, password: pwd })
+        });
 
-    if (res.ok) {
-        const data = await res.json();
-        localStorage.setItem('role', data.role);
-        localStorage.setItem('userId', data.userId);
-        if (data.role === 'ADMIN') {
-            window.location.href = 'admin.html';
+        if (res.ok) {
+            const data = await res.json();
+            localStorage.setItem('role', data.role);
+            localStorage.setItem('userId', data.userId);
+            if (data.role === 'ADMIN') {
+                window.location.href = 'admin.html';
+            } else {
+                localStorage.setItem('studentId', data.studentId);
+                redirectStudent();
+            }
         } else {
-            localStorage.setItem('studentId', data.studentId);
-            redirectStudent();
+            const errText = await res.text();
+            alert(`Authentication Failed:\n${errText}`);
         }
-    } else {
-        alert("Authentication Failed. Invalid Credentials.");
+    } catch (err) {
+        alert("Network Error: Could not reach the server.");
     }
 }
 
@@ -67,10 +73,11 @@ function redirectStudent() {
 }
 
 async function register() {
-    const uid = document.getElementById('regUserId').value;
-    const pwd = document.getElementById('regPwd').value;
-    const cpwd = document.getElementById('regCpwd').value;
+    const uid = document.getElementById('regUserId').value.trim();
+    const pwd = document.getElementById('regPwd').value.trim();
+    const cpwd = document.getElementById('regCpwd').value.trim();
 
+    if (!uid || !pwd) return alert("User ID and Password are required!");
     if (pwd !== cpwd) return alert("Passwords do not match!");
 
     const res = await fetch(`${API_URL}/register`, {
@@ -80,7 +87,7 @@ async function register() {
     });
 
     if (res.ok) {
-        alert("Registration Successful! Please Sign In.");
+        alert("Registration Successful! Account stored in Supabase DBMS. Please Sign In.");
         toggleAuth();
     } else {
         const err = await res.text();
@@ -94,7 +101,69 @@ function logout() {
     window.location.href = 'index.html';
 }
 
-// ADMIN FUNCTIONS
+// USER ACCOUNT MANAGEMENT (ADMIN)
+async function loadUsers() {
+    const res = await fetch(`${API_URL}/admin/users`);
+    if (res.ok) {
+        const users = await res.json();
+        const container = document.getElementById('usersTableContainer');
+        if (users.length === 0) {
+            container.innerHTML = `<p style="padding: 10px;">No registered student accounts found.</p>`;
+            return;
+        }
+
+        let html = `<table><tr><th>ID</th><th>Student User ID</th><th>Role</th><th>Action</th></tr>`;
+        users.forEach(u => {
+            html += `<tr>
+                <td>${u.id}</td>
+                <td><strong>${u.userId}</strong></td>
+                <td>${u.role}</td>
+                <td>
+                    <button onclick="deleteUser(${u.id}, '${u.userId}')" style="padding: 5px 10px; font-size: 12px; background: linear-gradient(45deg, #f12711, #f5af19); margin: 0; width: auto;">Delete</button>
+                </td>
+            </tr>`;
+        });
+        container.innerHTML = html + `</table>`;
+    }
+}
+
+async function adminCreateUser() {
+    const uid = document.getElementById('adminNewStudentId').value.trim();
+    const pwd = document.getElementById('adminNewStudentPwd').value.trim();
+
+    if (!uid || !pwd) return alert("Please fill in both User ID and Password.");
+
+    const res = await fetch(`${API_URL}/admin/users/create`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: uid, password: pwd })
+    });
+
+    if (res.ok) {
+        alert(`Student Account '${uid}' Created Successfully in Supabase DBMS!`);
+        document.getElementById('adminNewStudentId').value = '';
+        document.getElementById('adminNewStudentPwd').value = '';
+        loadUsers();
+    } else {
+        const err = await res.text();
+        alert(`Error: ${err}`);
+    }
+}
+
+async function deleteUser(id, userId) {
+    if (!confirm(`Are you sure you want to permanently delete user account '${userId}'?`)) return;
+
+    const res = await fetch(`${API_URL}/admin/users/${id}`, { method: 'DELETE' });
+    if (res.ok) {
+        alert(`Account '${userId}' deleted.`);
+        loadUsers();
+    } else {
+        const err = await res.text();
+        alert(`Failed to delete user: ${err}`);
+    }
+}
+
+// ADMIN TEST & LOG FUNCTIONS
 let questionCount = 0;
 function addQuestionField() {
     questionCount++;
@@ -123,7 +192,7 @@ function addQuestionField() {
 }
 
 async function createTest() {
-    const title = document.getElementById('testTitle').value;
+    const title = document.getElementById('testTitle').value.trim();
     const negMark = document.getElementById('negMark').checked;
     const blocks = document.querySelectorAll('.q-block');
 
@@ -131,13 +200,17 @@ async function createTest() {
 
     const questions = [];
     for (let block of blocks) {
-        const text = block.querySelector('.q-text').value;
-        const optA = block.querySelector('.q-optA').value;
-        const optB = block.querySelector('.q-optB').value;
-        const optC = block.querySelector('.q-optC').value;
-        const optD = block.querySelector('.q-optD').value;
+        const text = block.querySelector('.q-text').value.trim();
+        const optA = block.querySelector('.q-optA').value.trim();
+        const optB = block.querySelector('.q-optB').value.trim();
+        const optC = block.querySelector('.q-optC').value.trim();
+        const optD = block.querySelector('.q-optD').value.trim();
         const correct = block.querySelector('.q-correct').value;
         const imgFile = block.querySelector('.q-img').files[0];
+
+        if (!text || !optA || !optB || !optC || !optD) {
+            return alert("All questions and 4 options must be filled out!");
+        }
 
         let base64Img = null;
         if (imgFile) {
@@ -184,8 +257,8 @@ async function loadAdminTests() {
         container.innerHTML += `
             <div style="padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
                 <strong>${t.title}</strong> [${t.active ? 'ACTIVE' : 'DISABLED'}]
-                <button onclick="toggleTest(${t.id})" style="padding: 5px; font-size: 10px;">Toggle Access</button>
-                <button onclick="navigator.clipboard.writeText('${shareUrl}'); alert('Copied share link!');" style="padding: 5px; font-size: 10px; background: #11998e;">Copy Invite Link</button>
+                <button onclick="toggleTest(${t.id})" style="padding: 5px; font-size: 10px; width: auto;">Toggle Access</button>
+                <button onclick="navigator.clipboard.writeText('${shareUrl}'); alert('Copied share link!');" style="padding: 5px; font-size: 10px; background: #11998e; width: auto;">Copy Invite Link</button>
             </div>
         `;
     });

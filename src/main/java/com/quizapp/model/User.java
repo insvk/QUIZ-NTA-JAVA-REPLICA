@@ -1,6 +1,11 @@
 package com.quizapp.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "app_users")
@@ -15,9 +20,15 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    private String role;
+    private String role; // "STUDENT" or "ADMIN"
 
     public User() {}
+
+    public User(String userId, String password, String role) {
+        this.userId = userId;
+        this.password = password;
+        this.role = role;
+    }
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
