@@ -1,7 +1,7 @@
 const API_URL = window.location.origin.includes('localhost') ? 'https://kvnjg-java-quiz-nw.onrender.com' : '/api';
 
 // ==========================================
-// 1. STRICT ROUTING & AUTHENTICATION
+// 1. STRICT ROUTING & AUTHENTICATION LOCK
 // ==========================================
 window.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -10,33 +10,36 @@ window.addEventListener('DOMContentLoaded', () => {
 
     const path = window.location.pathname;
     const role = localStorage.getItem('role');
-    const isIndex = path.includes('index.html') || path.endsWith('/');
 
-    // Security Lock & Routing
+    // Strict absolute path checking
+    const isIndex = path === '/' || path.endsWith('index.html') || path === '';
+
     if (isIndex) {
-        if (role === 'ADMIN') return window.location.replace('admin.html');
-        if (role === 'STUDENT') return window.location.replace('student.html');
+        if (role === 'ADMIN') return window.location.replace('/admin.html');
+        if (role === 'STUDENT') return redirectStudent();
     } else if (path.includes('admin.html')) {
-        if (role !== 'ADMIN') {
-            localStorage.clear();
-            return window.location.replace('index.html');
-        }
+        if (role !== 'ADMIN') return forceLogout();
         initAdminDashboard(); 
     } else if (path.includes('student.html')) {
-        if (role !== 'STUDENT') {
-            localStorage.clear();
-            return window.location.replace('index.html');
-        }
+        if (role !== 'STUDENT') return forceLogout();
         loadStudentPortal();
         loadStudentAttempts();
     } else if (path.includes('quiz.html')) {
-        if (!role) {
-            localStorage.clear();
-            return window.location.replace('index.html');
-        }
+        if (!role) return forceLogout();
         loadExamEngine();
     }
 });
+
+// The ultimate fail-safe logout
+function forceLogout() {
+    localStorage.clear();
+    sessionStorage.clear();
+    window.location.replace('/');
+}
+
+function logout() {
+    forceLogout();
+}
 
 function toggleAuth() {
     document.getElementById('loginBox')?.classList.toggle('hidden');
@@ -45,12 +48,15 @@ function toggleAuth() {
 
 function togglePwd(id) {
     const input = document.getElementById(id);
-    input.type = input.type === 'password' ? 'text' : 'password';
+    if(input) input.type = input.type === 'password' ? 'text' : 'password';
 }
 
 async function login() {
-    const uid = document.getElementById('userId').value.trim();
-    const pwd = document.getElementById('pwd').value.trim();
+    const uid = document.getElementById('userId')?.value.trim();
+    const pwd = document.getElementById('pwd')?.value.trim();
+    
+    if (!uid || !pwd) return alert("Please enter your Username and Password.");
+
     try {
         const res = await fetch(`${API_URL}/login`, {
             method: 'POST',
@@ -61,8 +67,9 @@ async function login() {
             const data = await res.json();
             localStorage.setItem('role', data.role);
             localStorage.setItem('userId', data.userId);
+            
             if (data.role === 'ADMIN') {
-                window.location.replace('admin.html');
+                window.location.replace('/admin.html');
             } else {
                 localStorage.setItem('studentId', data.studentId);
                 localStorage.setItem('regNo', data.regNo || '');
@@ -82,8 +89,10 @@ function redirectStudent() {
     if (pendingTest) {
         sessionStorage.removeItem('pendingTestId');
         localStorage.setItem('currentTestId', pendingTest);
-        window.location.replace('quiz.html');
-    } else { window.location.replace('student.html'); }
+        window.location.replace('/quiz.html');
+    } else { 
+        window.location.replace('/student.html'); 
+    }
 }
 
 async function register() {
@@ -120,28 +129,30 @@ async function register() {
     } catch (err) { alert("Network Error: Registration failed."); }
 }
 
-function logout() { localStorage.clear(); sessionStorage.clear(); window.location.replace('index.html'); }
-
 // ==========================================
 // 2. SHARED SPIK THEME SIDEBAR LOGIC
 // ==========================================
-function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
+function toggleSidebar() { document.getElementById('sidebar')?.classList.toggle('open'); }
 
 function switchView(viewId, element) {
     document.querySelectorAll('.admin-view').forEach(v => v.classList.remove('active'));
-    document.getElementById(viewId).classList.add('active');
+    document.getElementById(viewId)?.classList.add('active');
+    
     if(element) {
         document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
         element.classList.add('active');
     }
-    // Refresh admin dash if applicable
+    // Refresh admin dash if clicking back to Home
     if(viewId === 'view-dashboard' && localStorage.getItem('role') === 'ADMIN') initAdminDashboard();
 }
 
+function switchAdminView(viewId, element) { switchView(viewId, element); } // Alias for Admin HTML
+
 // ==========================================
-// 3. ADMIN DASHBOARD LOGIC (Unchanged Spik Logic)
+// 3. ADMIN DASHBOARD LOGIC 
 // ==========================================
 let dashChart = null;
+
 async function initAdminDashboard() {
     try {
         const [testRes, attRes, logRes] = await Promise.all([
@@ -197,7 +208,7 @@ async function initAdminDashboard() {
                 options: { responsive: true, maintainAspectRatio: false }
             });
         }
-    } catch (e) {}
+    } catch (e) { console.log("Init dash error:", e); }
 }
 
 async function loadUsers() {
@@ -207,6 +218,7 @@ async function loadUsers() {
         const container = document.getElementById('usersTableContainer');
         if (!container) return;
         if (users.length === 0) return container.innerHTML = `<p>No student accounts found.</p>`;
+        
         let html = `<table class="clean-table"><thead><tr><th>Reg No</th><th>Name</th><th>Username</th><th>Action</th></tr></thead><tbody>`;
         users.forEach(u => {
             html += `<tr><td>${u.regNo || 'N/A'}</td><td>${u.name || 'N/A'}</td><td><strong>${u.userId}</strong></td>
@@ -326,7 +338,7 @@ async function loadAttempts() {
 function downloadXLS() { window.location.href = `${API_URL}/admin/export-excel`; }
 
 // ==========================================
-// 4. CLEAN SPIK STUDENT PORTAL
+// 4. STUDENT PORTAL LOGIC
 // ==========================================
 async function loadStudentPortal() {
     const res = await fetch(`${API_URL}/student/tests`);
@@ -391,7 +403,7 @@ async function loadStudentAttempts() {
     table.innerHTML = html + `</tbody></table>`;
 }
 
-function startQuiz(testId) { localStorage.setItem('currentTestId', testId); window.location.href = 'quiz.html'; }
+function startQuiz(testId) { localStorage.setItem('currentTestId', testId); window.location.replace('/quiz.html'); }
 
 // ==========================================
 // 5. EXAM ENGINE LOGIC (NTA/JEE REPLICA)
@@ -400,8 +412,10 @@ let examData = null, currentQIndex = 0, examTimer = null, remainingSeconds = 0, 
 
 async function loadExamEngine() {
     const testId = localStorage.getItem('currentTestId');
+    if(!testId) return window.location.replace('/student.html');
+
     const res = await fetch(`${API_URL}/student/test/${testId}`);
-    if (!res.ok) { alert("Exam unavailable."); return window.location.replace('student.html'); }
+    if (!res.ok) { alert("Exam unavailable."); return window.location.replace('/student.html'); }
     
     examData = await res.json();
     document.getElementById('examMainTitle').innerText = examData.title;
@@ -420,14 +434,18 @@ function startExamTimer() {
         const h = Math.floor(remainingSeconds / 3600).toString().padStart(2, '0');
         const m = Math.floor((remainingSeconds % 3600) / 60).toString().padStart(2, '0');
         const s = (remainingSeconds % 60).toString().padStart(2, '0');
-        document.getElementById('timeRemaining').innerText = `${h}:${m}:${s}`;
+        const timerDisplay = document.getElementById('timeRemaining');
+        if(timerDisplay) timerDisplay.innerText = `${h}:${m}:${s}`;
     }, 1000);
     buildSections(); loadQuestion(0);
 }
 
 function buildSections() {
     const sections = [...new Set(examData.questions.map(q => q.sectionName || 'GENERAL'))];
-    document.getElementById('sectionsBar').innerHTML = sections.map((s, idx) => `<div class="sec-tab ${idx===0?'active':''}" onclick="jumpToSection('${s}', this)">${s}</div>`).join('');
+    const secBar = document.getElementById('sectionsBar');
+    if(secBar) {
+        secBar.innerHTML = sections.map((s, idx) => `<div class="sec-tab ${idx===0?'active':''}" onclick="jumpToSection('${s}', this)">${s}</div>`).join('');
+    }
 }
 
 function jumpToSection(secName, element) {
@@ -445,7 +463,12 @@ function loadQuestion(index) {
     document.getElementById('qNumberDisplay').innerText = `Question ${index + 1}`;
     document.getElementById('questionText').innerHTML = q.questionText;
     document.getElementById('questionImageContainer').innerHTML = q.imageBase64 ? `<img src="${q.imageBase64}" style="max-width:100%; border-radius:8px; margin-top:15px; display:block;">` : '';
-    ['A','B','C','D'].forEach(l => document.getElementById(`opt${l}Text`).innerText = q[`option${l}`]);
+    
+    ['A','B','C','D'].forEach(l => {
+        const opt = document.getElementById(`opt${l}Text`);
+        if(opt) opt.innerText = q[`option${l}`];
+    });
+
     document.querySelectorAll('input[name="examOpt"]').forEach(rb => { rb.checked = (rb.value === qAnswers[index]); });
 
     const activeSec = q.sectionName || 'GENERAL';
@@ -454,7 +477,9 @@ function loadQuestion(index) {
 }
 
 function updatePalette() {
-    const grid = document.getElementById('questionGrid'); grid.innerHTML = '';
+    const grid = document.getElementById('questionGrid'); 
+    if(!grid) return;
+    grid.innerHTML = '';
     let counts = {nv:0, na:0, ans:0, mr:0, amr:0};
     qStates.forEach((s, idx) => {
         let cls = 'badge-nv';
@@ -462,7 +487,10 @@ function updatePalette() {
         let styleStr = idx === currentQIndex ? 'box-shadow: 0 0 0 2px #000;' : '';
         grid.innerHTML += `<div class="badge ${cls}" style="${styleStr}" onclick="loadQuestion(${idx})">${idx + 1}</div>`;
     });
-    ['nv','na','ans','mr','amr'].forEach(k => document.getElementById(`count-${k}`).innerText = counts[k]);
+    ['nv','na','ans','mr','amr'].forEach(k => {
+        const el = document.getElementById(`count-${k}`);
+        if(el) el.innerText = counts[k];
+    });
 }
 
 function getCurrentSelection() { const sel = document.querySelector('input[name="examOpt"]:checked'); return sel ? sel.value : null; }
@@ -471,7 +499,7 @@ function saveAndMark() { const ans = getCurrentSelection(); if(ans){ qAnswers[cu
 function clearResponse() { document.querySelectorAll('input[name="examOpt"]').forEach(rb => rb.checked = false); qAnswers[currentQIndex] = null; qStates[currentQIndex] = 1; updatePalette(); }
 function nextQuestion() { if (currentQIndex < examData.questions.length - 1) loadQuestion(currentQIndex + 1); else updatePalette(); }
 function prevQuestion() { if (currentQIndex > 0) loadQuestion(currentQIndex - 1); }
-function toggleInstructions() { document.getElementById('instructionsModal').classList.toggle('hidden'); }
+function toggleInstructions() { document.getElementById('instructionsModal')?.classList.toggle('hidden'); }
 
 async function submitExamFinal() {
     if(!confirm("Are you sure you want to submit the exam?")) return;
@@ -491,7 +519,7 @@ async function submitExamFinal() {
                         <h1 style="color: #1f2937;">Exam Submitted Successfully!</h1>
                         <h2 style="color:#01c55d; font-size: 40px; margin: 20px 0;">Score: ${result.score}</h2>
                         <p style="font-size: 16px; color: #4b5563;">Correct: <strong>${result.correctAnswers}</strong> | Wrong: <strong>${result.wrongAnswers}</strong></p>
-                        <button onclick="window.location.replace('student.html')" class="btn-save-next" style="margin-top:30px; font-size:16px; padding:12px 30px;">Return to Dashboard</button>
+                        <button onclick="window.location.replace('/student.html')" class="btn-save-next" style="margin-top:30px; font-size:16px; padding:12px 30px;">Return to Dashboard</button>
                     </div>
                 </div>`;
         }
