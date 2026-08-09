@@ -17,7 +17,17 @@
     overflow: hidden;
 }
 
-/* Fix 1: Force side-by-side layout and allow flexible height */
+/* --- Top Right Floating Logo --- */
+.top-right-logo {
+    position: absolute;
+    top: 30px;
+    right: 40px;
+    height: 60px; /* Change this to make it bigger/smaller */
+    width: auto;
+    z-index: 1000; /* Guarantees it stays on top of everything */
+}
+
+/* Force side-by-side layout and allow flexible height */
 .auth-wrapper {
     width: 100%; max-width: 1000px;
     height: auto; min-height: 500px; 
@@ -114,7 +124,7 @@
 }
 .forgot-link:hover { color: #333; }
 
-/* Fix 2: Remove absolute positioning to stop text overlap */
+/* Remove absolute positioning to stop text overlap */
 .bottom-link-area {
     position: relative; 
     margin-top: 25px;   
@@ -128,6 +138,7 @@
 
 /* Responsive adjustments */
 @media (max-width: 800px) {
+    .top-right-logo { top: 20px; right: 20px; height: 45px; } /* Shrink logo slightly on mobile */
     .auth-wrapper { flex-direction: column; }
     .auth-left-panel { display: none; } /* Hide illustration on mobile */
     .auth-right-panel { padding: 40px 20px; }
