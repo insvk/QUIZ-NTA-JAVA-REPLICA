@@ -8,33 +8,48 @@ window.addEventListener('DOMContentLoaded', () => {
     const sharedTestId = urlParams.get('testId');
     if (sharedTestId) sessionStorage.setItem('pendingTestId', sharedTestId);
 
-    const path = window.location.pathname;
+    const path = window.location.pathname.toLowerCase();
     const role = localStorage.getItem('role');
 
-    // Strict absolute path checking
-    const isIndex = path === '/' || path.endsWith('index.html') || path === '';
-
-    if (isIndex) {
-        if (role === 'ADMIN') return window.location.replace('/admin.html');
-        if (role === 'STUDENT') return redirectStudent();
-    } else if (path.includes('admin.html')) {
+    // 1. Protect Admin Page
+    if (path.includes('admin.html')) {
         if (role !== 'ADMIN') return forceLogout();
         initAdminDashboard(); 
-    } else if (path.includes('student.html')) {
+    } 
+    // 2. Protect Student Page
+    else if (path.includes('student.html')) {
         if (role !== 'STUDENT') return forceLogout();
         loadStudentPortal();
         loadStudentAttempts();
-    } else if (path.includes('quiz.html')) {
+    } 
+    // 3. Protect Exam Engine
+    else if (path.includes('quiz.html')) {
         if (!role) return forceLogout();
         loadExamEngine();
+    } 
+    // 4. Default Landing (Index / Root)
+    else {
+        if (role === 'ADMIN') return window.location.replace('admin.html');
+        if (role === 'STUDENT') return redirectStudent();
+        
+        // If no role, ensure they stay on the clean login screen
+        document.getElementById('loginBox')?.classList.remove('hidden');
+        document.getElementById('regBox')?.classList.add('hidden');
     }
 });
 
-// The ultimate fail-safe logout
+// The Ultimate Fail-Safe Logout (Nuclear Cache Busting)
 function forceLogout() {
+    // Forcefully overwrite keys before clearing to ensure no ghosts remain
+    localStorage.setItem('role', '');
+    localStorage.setItem('userId', '');
+    
+    // Wipe all storage
     localStorage.clear();
     sessionStorage.clear();
-    window.location.replace('/');
+    
+    // Hard redirect with a timestamp to permanently break browser caching
+    window.location.href = 'index.html?logout=' + new Date().getTime();
 }
 
 function logout() {
@@ -63,13 +78,14 @@ async function login() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ userId: uid, password: pwd })
         });
+        
         if (res.ok) {
             const data = await res.json();
             localStorage.setItem('role', data.role);
             localStorage.setItem('userId', data.userId);
             
             if (data.role === 'ADMIN') {
-                window.location.replace('/admin.html');
+                window.location.replace('admin.html');
             } else {
                 localStorage.setItem('studentId', data.studentId);
                 localStorage.setItem('regNo', data.regNo || '');
@@ -89,9 +105,9 @@ function redirectStudent() {
     if (pendingTest) {
         sessionStorage.removeItem('pendingTestId');
         localStorage.setItem('currentTestId', pendingTest);
-        window.location.replace('/quiz.html');
+        window.location.replace('quiz.html');
     } else { 
-        window.location.replace('/student.html'); 
+        window.location.replace('student.html'); 
     }
 }
 
@@ -403,7 +419,7 @@ async function loadStudentAttempts() {
     table.innerHTML = html + `</tbody></table>`;
 }
 
-function startQuiz(testId) { localStorage.setItem('currentTestId', testId); window.location.replace('/quiz.html'); }
+function startQuiz(testId) { localStorage.setItem('currentTestId', testId); window.location.replace('quiz.html'); }
 
 // ==========================================
 // 5. EXAM ENGINE LOGIC (NTA/JEE REPLICA)
@@ -412,10 +428,10 @@ let examData = null, currentQIndex = 0, examTimer = null, remainingSeconds = 0, 
 
 async function loadExamEngine() {
     const testId = localStorage.getItem('currentTestId');
-    if(!testId) return window.location.replace('/student.html');
+    if(!testId) return window.location.replace('student.html');
 
     const res = await fetch(`${API_URL}/student/test/${testId}`);
-    if (!res.ok) { alert("Exam unavailable."); return window.location.replace('/student.html'); }
+    if (!res.ok) { alert("Exam unavailable."); return window.location.replace('student.html'); }
     
     examData = await res.json();
     document.getElementById('examMainTitle').innerText = examData.title;
@@ -519,7 +535,7 @@ async function submitExamFinal() {
                         <h1 style="color: #1f2937;">Exam Submitted Successfully!</h1>
                         <h2 style="color:#01c55d; font-size: 40px; margin: 20px 0;">Score: ${result.score}</h2>
                         <p style="font-size: 16px; color: #4b5563;">Correct: <strong>${result.correctAnswers}</strong> | Wrong: <strong>${result.wrongAnswers}</strong></p>
-                        <button onclick="window.location.replace('/student.html')" class="btn-save-next" style="margin-top:30px; font-size:16px; padding:12px 30px;">Return to Dashboard</button>
+                        <button onclick="window.location.replace('student.html')" class="btn-save-next" style="margin-top:30px; font-size:16px; padding:12px 30px;">Return to Dashboard</button>
                     </div>
                 </div>`;
         }
