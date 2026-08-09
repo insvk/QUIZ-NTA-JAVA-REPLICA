@@ -3,75 +3,221 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard | CAPSTONE JAVA QUIZz</title>
+    <title>Admin Dashboard | GlassQuiz</title>
     <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body>
-    <div class="glass-panel dashboard">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h2>Admin Control Center</h2>
-            <button onclick="logout()" style="width: auto; padding: 8px 16px;">Logout</button>
-        </div>
+<body class="admin-light-body">
+    
+    <div class="spik-layout">
         
-        <div class="card-grid">
-            <div class="glass-card" style="grid-column: span 2;">
-                <h3>Create Unlimited MCQ Test</h3>
-                
-                <input type="text" id="testTitle" placeholder="Enter Test Title">
-                
-                <label style="display: block; margin: 10px 0;">
-                    <input type="checkbox" id="negMark"> Enable -1 Negative Marking
-                </label>
+        <!-- SIDEBAR -->
+        <aside class="spik-sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="#6f42c1"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                <h2>Glass<span>Admin</span></h2>
+                <button class="mobile-close" onclick="toggleSidebar()">✕</button>
+            </div>
+            <div class="sidebar-menu">
+                <p class="menu-label">MAIN MENU</p>
+                <a href="#" class="menu-item active" onclick="switchAdminView('view-dashboard', this)">
+                    <span>🏠</span> Dashboard
+                </a>
+                <a href="#" class="menu-item" onclick="switchAdminView('view-students', this); loadUsers();">
+                    <span>👥</span> Students
+                </a>
+                <p class="menu-label">EXAMINATIONS</p>
+                <a href="#" class="menu-item" onclick="switchAdminView('view-test-create', this)">
+                    <span>✍️</span> Create Test
+                </a>
+                <a href="#" class="menu-item" onclick="switchAdminView('view-test-manage', this); loadAdminTests();">
+                    <span>📑</span> Manage Tests
+                </a>
+                <a href="#" class="menu-item" onclick="switchAdminView('view-results', this); loadAttempts();">
+                    <span>📊</span> Result Analysis
+                </a>
+            </div>
+        </aside>
 
-                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                    <div style="flex: 1;">
-                        <label style="display: block; font-size: 14px;">Exam Duration (Minutes):</label>
-                        <input type="number" id="testDuration" placeholder="180" value="180" style="width: 100%;">
-                    </div>
-                    <div style="flex: 1;">
-                        <label style="display: block; font-size: 14px;">Schedule Open Time (IST - Optional):</label>
-                        <input type="datetime-local" id="testSchedule" style="width: 100%; padding: 10px; border-radius: 4px;">
+        <!-- MAIN CONTENT -->
+        <main class="spik-main">
+            
+            <!-- TOP NAVBAR -->
+            <nav class="spik-navbar">
+                <div class="nav-left">
+                    <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
+                    <div class="search-box">
+                        <span>🔍</span>
+                        <input type="text" placeholder="What do you want to find?">
                     </div>
                 </div>
-                
-                <label style="display: block; font-size: 14px;">General Instructions (HTML Table Supported):</label>
-                <textarea id="testInstructions" rows="4" placeholder="Paste HTML table or text here..." style="width: 100%; margin-bottom: 15px;"></textarea>
-                
-                <h4 style="margin-top: 20px;">Add Questions to Test</h4>
-                <div id="questionsBuilder"></div>
-                
-                <button onclick="addQuestionField()" style="background: rgba(255,255,255,0.2); margin-bottom: 10px;">+ Add Another Question</button>
-                <button onclick="createTest()" style="background: linear-gradient(45deg, #11998e, #38ef7d);">Publish Test</button>
-            </div>
-
-            <div class="glass-card">
-                <h3>Managed Tests & Share Links</h3>
-                <button onclick="loadAdminTests()">Refresh Tests</button>
-                <div id="adminTestList" style="margin-top: 15px;"></div>
-            </div>
-
-            <div class="glass-card">
-                <h3>Analytics & System Logs</h3>
-                <button onclick="downloadXLS()" style="background: linear-gradient(45deg, #f5af19, #f12711);">Download Results (.XLS)</button>
-                <button onclick="loadLogs()" style="margin-top: 10px;">View System Logs</button>
-                <div id="logsContainer" style="margin-top: 15px; max-height: 200px; overflow-y: auto; font-size: 12px;"></div>
-            </div>
-
-            <div class="glass-card" style="grid-column: span 3;">
-                <h3>User Account Management (Students)</h3>
-                <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
-                    <input type="text" id="adminNewStudentId" placeholder="Username" style="margin: 0; flex: 1;">
-                    <input type="text" id="adminNewStudentName" placeholder="Full Name" style="margin: 0; flex: 1;">
-                    <input type="password" id="adminNewStudentPwd" placeholder="Password" style="margin: 0; flex: 1;">
-                    <button onclick="adminCreateUser()" style="width: auto; padding: 10px 20px; margin: 0; background: linear-gradient(45deg, #11998e, #38ef7d);">+ Create Student</button>
-                    <button onclick="loadUsers()" style="width: auto; padding: 10px 20px; margin: 0; background: rgba(255,255,255,0.2);">Refresh List</button>
+                <div class="nav-right">
+                    <div class="admin-profile">
+                        <img src="https://ui-avatars.com/api/?name=Admin&background=6f42c1&color=fff" alt="Admin">
+                        <div class="admin-info">
+                            <strong>System Admin</strong>
+                            <span>Administrator</span>
+                        </div>
+                    </div>
+                    <button class="btn-logout" onclick="logout()">Logout</button>
                 </div>
-                <div id="usersTableContainer" style="overflow-x: auto;"></div>
-            </div>
-        </div>
+            </nav>
 
-        <h3 style="margin-top: 30px;">Student Attempt Performance Data</h3>
-        <div id="attemptsTable" style="margin-top: 15px; overflow-x: auto;"></div>
+            <!-- DYNAMIC VIEWS CONTAINER -->
+            <div class="spik-content">
+                
+                <!-- 1. DASHBOARD HOME VIEW -->
+                <div id="view-dashboard" class="admin-view active">
+                    <h2 class="page-title">Admin Dashboard</h2>
+                    
+                    <!-- Top Stats Cards -->
+                    <div class="stats-grid">
+                        <div class="stat-card purple-card">
+                            <div class="stat-info">
+                                <h3>Top Scorer</h3>
+                                <h2 id="statTopScorerName">Loading...</h2>
+                                <p id="statTopScorerScore">Score: 0</p>
+                            </div>
+                            <div class="stat-icon">🏆</div>
+                        </div>
+                        <div class="stat-card blue-card">
+                            <div class="stat-info">
+                                <h3>Live Tests</h3>
+                                <h2 id="statLiveTests">0</h2>
+                                <p>Active right now</p>
+                            </div>
+                            <div class="stat-icon">🟢</div>
+                        </div>
+                        <div class="stat-card orange-card">
+                            <div class="stat-info">
+                                <h3>Upcoming Tests</h3>
+                                <h2 id="statUpcomingTests">0</h2>
+                                <p>Scheduled (IST)</p>
+                            </div>
+                            <div class="stat-icon">⏳</div>
+                        </div>
+                        <div class="stat-card green-card">
+                            <div class="stat-info">
+                                <h3>Finished Attempts</h3>
+                                <h2 id="statFinishedTests">0</h2>
+                                <p>Total submissions</p>
+                            </div>
+                            <div class="stat-icon">📝</div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-grid-2">
+                        <!-- Chart Area -->
+                        <div class="dash-card">
+                            <div class="card-header">
+                                <h3>Recent Test Performance (Last 3)</h3>
+                            </div>
+                            <canvas id="performanceChart" height="250"></canvas>
+                        </div>
+                        
+                        <!-- Logs Table -->
+                        <div class="dash-card">
+                            <div class="card-header">
+                                <h3>Recent System Logs</h3>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="clean-table" id="dashLogsTable">
+                                    <thead><tr><th>Time</th><th>User</th><th>Action</th></tr></thead>
+                                    <tbody><!-- Dynamic --></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. STUDENT MANAGEMENT VIEW -->
+                <div id="view-students" class="admin-view">
+                    <h2 class="page-title">Student Management</h2>
+                    <div class="dash-card">
+                        <div class="card-header">
+                            <h3>Create New Student Account</h3>
+                        </div>
+                        <div class="form-row-multi">
+                            <input type="text" id="adminNewStudentId" placeholder="Username" class="spik-input">
+                            <input type="text" id="adminNewStudentName" placeholder="Full Name" class="spik-input">
+                            <input type="password" id="adminNewStudentPwd" placeholder="Password" class="spik-input">
+                            <button onclick="adminCreateUser()" class="btn-primary-spik">+ Create</button>
+                        </div>
+                    </div>
+                    
+                    <div class="dash-card mt-20">
+                        <div class="card-header">
+                            <h3>All Registered Students</h3>
+                            <button onclick="loadUsers()" class="btn-outline-spik">Refresh</button>
+                        </div>
+                        <div class="table-responsive" id="usersTableContainer"></div>
+                    </div>
+                </div>
+
+                <!-- 3. TEST CREATION VIEW -->
+                <div id="view-test-create" class="admin-view">
+                    <h2 class="page-title">Create Examination</h2>
+                    <div class="dash-card">
+                        <div class="form-grid">
+                            <div class="input-group">
+                                <label>Test Title</label>
+                                <input type="text" id="testTitle" placeholder="e.g. JEE Mains Mock 1" class="spik-input">
+                            </div>
+                            <div class="input-group">
+                                <label>Negative Marking</label>
+                                <div style="padding-top:10px;">
+                                    <input type="checkbox" id="negMark" style="width:18px; height:18px; accent-color:#6f42c1;"> Enable (-1)
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label>Duration (Minutes)</label>
+                                <input type="number" id="testDuration" value="180" class="spik-input">
+                            </div>
+                            <div class="input-group">
+                                <label>Schedule Open Time (IST)</label>
+                                <input type="datetime-local" id="testSchedule" class="spik-input">
+                            </div>
+                            <div class="input-group" style="grid-column: span 2;">
+                                <label>General Instructions (HTML supported)</label>
+                                <textarea id="testInstructions" rows="3" class="spik-input" placeholder="Enter test instructions..."></textarea>
+                            </div>
+                        </div>
+
+                        <div class="card-header mt-20" style="border-top:1px solid #eee; padding-top:20px;">
+                            <h3>Question Builder</h3>
+                        </div>
+                        <div id="questionsBuilder"></div>
+                        
+                        <div style="display:flex; gap:15px; margin-top:20px;">
+                            <button onclick="addQuestionField()" class="btn-outline-spik">+ Add Question</button>
+                            <button onclick="createTest()" class="btn-primary-spik">Publish Test</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. TEST MANAGEMENT VIEW -->
+                <div id="view-test-manage" class="admin-view">
+                    <h2 class="page-title">Manage Tests</h2>
+                    <div class="dash-card">
+                        <div class="table-responsive" id="adminTestList"></div>
+                    </div>
+                </div>
+
+                <!-- 5. RESULT ANALYSIS VIEW -->
+                <div id="view-results" class="admin-view">
+                    <h2 class="page-title">Result Analysis</h2>
+                    <div class="dash-card">
+                        <div class="card-header">
+                            <h3>All Student Attempts</h3>
+                            <button onclick="downloadXLS()" class="btn-success-spik">Export Excel</button>
+                        </div>
+                        <div class="table-responsive" id="attemptsTable"></div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
     </div>
 
     <script src="app.js"></script>
