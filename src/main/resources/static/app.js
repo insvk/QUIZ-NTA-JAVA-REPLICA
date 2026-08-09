@@ -1,4 +1,4 @@
-const API_URL = window.location.origin.includes('localhost') ? 'https://quiz-java-r217.onrender.com' : '/api';
+const API_URL = window.location.origin.includes('localhost') ? 'https://kvnjg-java-quiz-nw.onrender.com' : '/api';
 
 window.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
