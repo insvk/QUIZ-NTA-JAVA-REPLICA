@@ -79,3 +79,60 @@ button:hover { box-shadow: 0 0 15px rgba(0, 242, 254, 0.5); transform: scale(1.0
 table { width: 100%; border-collapse: collapse; margin-top: 10px; }
 th, td { padding: 10px; border: 1px solid rgba(255,255,255,0.1); text-align: left; }
 th { background: rgba(255,255,255,0.1); }
+
+/* --- NTA/JEE EXAM ENGINE STYLES --- */
+.exam-body-bg { background-color: #f4f6f8; font-family: Arial, sans-serif; margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+.exam-header { background: #fff; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ddd; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+.exam-title-area h2 { margin: 0; color: #333; font-size: 18px; }
+.exam-meta { display: flex; gap: 20px; align-items: center; font-weight: bold; }
+.timer-box { background: #f8d7da; color: #721c24; padding: 5px 15px; border-radius: 4px; border: 1px solid #f5c6cb; }
+.user-badge { background: #e2e3e5; padding: 5px 10px; border-radius: 4px; }
+
+/* Instructions */
+.exam-container { background: #fff; margin: 20px auto; width: 90%; max-width: 1000px; padding: 30px; box-shadow: 0 0 10px rgba(0,0,0,0.1); border-radius: 8px; height: 80vh; overflow-y: auto; }
+.instruction-content table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+.instruction-content th, .instruction-content td { border: 1px solid #ccc; padding: 10px; text-align: center; }
+.instruction-content th { background: #0056b3; color: white; }
+.terms-box { background: #f9f9f9; padding: 15px; border: 1px solid #ddd; margin-top: 20px; }
+.btn-primary { background: #8b85ff; color: white; border: none; padding: 12px 30px; font-size: 16px; border-radius: 4px; cursor: pointer; }
+.btn-primary:disabled { background: #ccc; cursor: not-allowed; }
+
+/* Layout Grid */
+.exam-layout { display: flex; flex-direction: column; height: calc(100vh - 60px); }
+.sections-bar { background: #fff; padding: 0 20px; border-bottom: 1px solid #ddd; display: flex; gap: 5px; overflow-x: auto; }
+.sec-tab { padding: 12px 20px; background: #fff; border: 1px solid #ddd; border-bottom: none; cursor: pointer; font-weight: bold; color: #555; }
+.sec-tab.active { background: #0056b3; color: white; }
+
+.exam-main-area { display: flex; flex: 1; overflow: hidden; }
+.question-panel { flex: 3; background: #fff; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; border-right: 2px solid #ddd; }
+.palette-panel { flex: 1; background: #fff; padding: 15px; overflow-y: auto; min-width: 300px; }
+
+/* Question Area */
+.q-header { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
+.q-num { font-size: 20px; font-weight: bold; color: #333; }
+.q-type { background: #e0f3ff; color: #007bff; padding: 3px 10px; border-radius: 12px; font-size: 12px; }
+.q-text { font-size: 16px; margin-bottom: 20px; line-height: 1.5; }
+.opt-row { display: block; border: 1px solid #ddd; padding: 15px; margin-bottom: 10px; border-radius: 4px; cursor: pointer; }
+.opt-row:hover { background: #f9f9f9; }
+
+/* Bottom Action Buttons */
+.action-buttons { margin-top: auto; padding-top: 20px; border-top: 1px solid #eee; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.btn-save-next { background: #28a745; color: white; border: none; padding: 10px 15px; border-radius: 3px; cursor: pointer; font-weight: bold; }
+.btn-mark-review { background: #ff9800; color: white; border: none; padding: 10px 15px; border-radius: 3px; cursor: pointer; font-weight: bold; }
+.btn-clear { background: #fff; color: #333; border: 1px solid #ccc; padding: 10px 15px; border-radius: 3px; cursor: pointer; }
+.nav-buttons { margin-left: auto; display: flex; gap: 10px; }
+.btn-nav { background: #fff; border: 1px solid #0056b3; color: #0056b3; padding: 10px 15px; border-radius: 3px; cursor: pointer; }
+.btn-submit { background: #17a2b8; color: white; border: none; padding: 10px 20px; border-radius: 3px; cursor: pointer; font-weight: bold; }
+
+/* Question Palette & Badges */
+.palette-legend { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 12px; }
+.legend-item { display: flex; align-items: center; gap: 8px; }
+.badge { width: 30px; height: 30px; line-height: 30px; text-align: center; color: white; font-weight: bold; border-radius: 4px; cursor: pointer; border: 1px solid transparent; }
+.badge-nv { background: #e0e0e0; color: #333; border-color: #ccc; } /* Not Visited - Gray */
+.badge-na { background: #dc3545; } /* Not Answered - Red */
+.badge-ans { background: #28a745; } /* Answered - Green */
+.badge-mr { background: #6f42c1; border-radius: 50%; } /* Marked - Purple Circle */
+.badge-amr { background: #6f42c1; border-radius: 50%; position: relative; } /* Ans+Marked */
+.badge-amr::after { content: '✔'; position: absolute; bottom: -5px; right: -5px; background: #28a745; color: white; font-size: 10px; width: 14px; height: 14px; line-height: 14px; border-radius: 50%; }
+
+.q-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 10px; }

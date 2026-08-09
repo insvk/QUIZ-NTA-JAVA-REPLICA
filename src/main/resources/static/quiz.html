@@ -3,15 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live Test | GlassQuiz</title>
+    <title>Test Engine</title>
     <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-    <div class="glass-panel dashboard" style="max-width: 800px;">
-        <h2 id="quizTitle">Loading Test...</h2>
-        <div id="quizContainer"></div>
-        <button id="submitBtn" onclick="submitExam()" style="background: linear-gradient(45deg, #11998e, #38ef7d); margin-top: 20px;">Submit Examination</button>
+<body class="exam-body-bg">
+    <!-- TOP HEADER -->
+    <header class="exam-header">
+        <div class="exam-title-area">
+            <h2 id="examMainTitle">Loading Exam...</h2>
+        </div>
+        <div class="exam-meta">
+            <div class="timer-box">Time Left: <span id="timeRemaining">00:00:00</span></div>
+            <div class="user-badge" id="studentBadge">Student</div>
+        </div>
+    </header>
+
+    <!-- INSTRUCTIONS SCREEN -->
+    <div id="instructionsScreen" class="exam-container" style="display: none;">
+        <h2 style="text-align: center; margin-bottom: 20px;">General Instructions</h2>
+        <div id="instructionContent" class="instruction-content"></div>
+        
+        <div class="terms-box">
+            <input type="checkbox" id="agreeCheck">
+            <label for="agreeCheck">I have read and understood the instructions. I agree that I will not use unfair means.</label>
+        </div>
+        <div style="text-align: center; margin-top: 20px;">
+            <button id="proceedBtn" class="btn-primary" disabled onclick="startExamTimer()">PROCEED</button>
+        </div>
     </div>
+
+    <!-- MAIN EXAM SCREEN -->
+    <div id="examScreen" class="exam-layout" style="display: none;">
+        <!-- Sections Bar -->
+        <div class="sections-bar" id="sectionsBar"></div>
+
+        <div class="exam-main-area">
+            <!-- Left Panel: Question & Options -->
+            <div class="question-panel">
+                <div class="q-header">
+                    <span id="qNumberDisplay" class="q-num">Question 1</span>
+                    <span class="q-type">Single Select Type</span>
+                </div>
+                
+                <div id="questionText" class="q-text"></div>
+                <div id="questionImageContainer"></div>
+                
+                <div class="options-container">
+                    <label class="opt-row"><input type="radio" name="examOpt" value="A"> <span id="optAText"></span></label>
+                    <label class="opt-row"><input type="radio" name="examOpt" value="B"> <span id="optBText"></span></label>
+                    <label class="opt-row"><input type="radio" name="examOpt" value="C"> <span id="optCText"></span></label>
+                    <label class="opt-row"><input type="radio" name="examOpt" value="D"> <span id="optDText"></span></label>
+                </div>
+
+                <!-- Bottom Action Buttons -->
+                <div class="action-buttons">
+                    <button class="btn-save-next" onclick="saveAndNext()">SAVE & NEXT</button>
+                    <button class="btn-mark-review" onclick="saveAndMark()">SAVE & MARK FOR REVIEW</button>
+                    <button class="btn-clear" onclick="clearResponse()">CLEAR RESPONSE</button>
+                    <div class="nav-buttons">
+                        <button class="btn-nav" onclick="prevQuestion()">&larr; BACK</button>
+                        <button class="btn-nav" onclick="nextQuestion()">NEXT &rarr;</button>
+                        <button class="btn-submit" onclick="submitExamFinal()">SUBMIT</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Question Palette -->
+            <div class="palette-panel">
+                <div class="palette-legend">
+                    <div class="legend-item"><div class="badge badge-nv" id="count-nv">0</div> Not Visited</div>
+                    <div class="legend-item"><div class="badge badge-na" id="count-na">0</div> Not Answered</div>
+                    <div class="legend-item"><div class="badge badge-ans" id="count-ans">0</div> Answered</div>
+                    <div class="legend-item"><div class="badge badge-mr" id="count-mr">0</div> Marked for Review</div>
+                    <div class="legend-item"><div class="badge badge-amr" id="count-amr">0</div> Answered & Marked</div>
+                </div>
+                
+                <h4 style="margin: 15px 0 5px 0; background: #e9ecef; padding: 5px;">CHOOSE A QUESTION</h4>
+                <div class="q-grid" id="questionGrid"></div>
+            </div>
+        </div>
+    </div>
+
     <script src="app.js"></script>
+    <script>
+        // Initialize on load
+        window.onload = () => {
+            document.getElementById('studentBadge').innerText = localStorage.getItem('userId');
+            document.getElementById('agreeCheck').addEventListener('change', (e) => {
+                document.getElementById('proceedBtn').disabled = !e.target.checked;
+            });
+            loadExamEngine();
+        }
+    </script>
 </body>
 </html>

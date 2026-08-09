@@ -14,13 +14,20 @@
         </div>
         
         <div class="card-grid">
-            <!-- Test Creation -->
             <div class="glass-card" style="grid-column: span 2;">
                 <h3>Create Unlimited MCQ Test</h3>
+                
                 <input type="text" id="testTitle" placeholder="Enter Test Title">
+                
                 <label style="display: block; margin: 10px 0;">
                     <input type="checkbox" id="negMark"> Enable -1 Negative Marking
                 </label>
+
+                <label style="display: block; font-size: 14px; margin-top: 10px;">Exam Duration (Minutes):</label>
+                <input type="number" id="testDuration" placeholder="180" value="180" style="margin-bottom: 10px; width: 100%;">
+                
+                <label style="display: block; font-size: 14px;">General Instructions (HTML Table Supported):</label>
+                <textarea id="testInstructions" rows="4" placeholder="Paste HTML table or text here..." style="width: 100%; margin-bottom: 15px;"></textarea>
                 
                 <h4 style="margin-top: 20px;">Add Questions to Test</h4>
                 <div id="questionsBuilder"></div>
@@ -29,14 +36,12 @@
                 <button onclick="createTest()" style="background: linear-gradient(45deg, #11998e, #38ef7d);">Publish Test</button>
             </div>
 
-            <!-- Manage Active Tests -->
             <div class="glass-card">
                 <h3>Managed Tests & Share Links</h3>
                 <button onclick="loadAdminTests()">Refresh Tests</button>
                 <div id="adminTestList" style="margin-top: 15px;"></div>
             </div>
 
-            <!-- Analytics & Export -->
             <div class="glass-card">
                 <h3>Analytics & System Logs</h3>
                 <button onclick="downloadXLS()" style="background: linear-gradient(45deg, #f5af19, #f12711);">Download Results (.XLS)</button>
@@ -44,7 +49,6 @@
                 <div id="logsContainer" style="margin-top: 15px; max-height: 200px; overflow-y: auto; font-size: 12px;"></div>
             </div>
 
-            <!-- Account Management System -->
             <div class="glass-card" style="grid-column: span 3;">
                 <h3>User Account Management (Students)</h3>
                 <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
@@ -60,6 +64,7 @@
         <h3 style="margin-top: 30px;">Student Attempt Performance Data</h3>
         <div id="attemptsTable" style="margin-top: 15px; overflow-x: auto;"></div>
     </div>
+
     <script src="app.js"></script>
 </body>
 </html>
