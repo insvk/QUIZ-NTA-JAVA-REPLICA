@@ -341,8 +341,10 @@ th { background: rgba(255,255,255,0.1); }
     font-family: 'Inter', sans-serif;
     outline: none;
     transition: border-color 0.2s;
-    background: transparent;
+    background-color: #ffffff; /* Forces white background */
+    color: #111111; /* Forces text to be visible/black */
 }
+
 .input-group input:focus { border-color: #111; }
 .file-input {
     padding: 9px !important;

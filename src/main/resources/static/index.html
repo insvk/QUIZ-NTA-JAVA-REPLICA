@@ -5,33 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GlassQuiz | Access</title>
     <link rel="stylesheet" href="styles.css">
-    <!-- Using Inter font for that sleek, modern startup look -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body class="split-auth-body">
     
-    <!-- TOP NAVIGATION -->
-    <nav class="auth-nav">
-        <div class="nav-left">
-            <div class="nav-logo-circle"></div>
-        </div>
-        <div class="nav-right">
-            <div class="search-pill">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                Search
-            </div>
-            <div class="lang-select">English (United States) ▾</div>
-            <button class="nav-login-btn" onclick="toggleAuth()">Log in</button>
-        </div>
-    </nav>
-
     <main class="auth-main">
         <!-- LEFT PANEL (Dark Mode & Graphics) -->
         <div class="auth-left">
             <h1>Learn with us</h1>
             <p>Access to thousands of test resources, scheduled exams, and study templates</p>
             
-            <!-- Abstract Geometric Wireframe (SVG) -->
             <div class="geometric-graphic">
                 <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
                     <circle cx="40" cy="20" r="10" fill="none" stroke="#fff" stroke-width="2"/>
@@ -89,16 +72,9 @@
                 </div>
                 <p class="pwd-hint">Use 8 or more characters with a mix of letters, numbers & symbols</p>
 
-                <div class="checkbox-group">
-                    <label><input type="checkbox" id="termsCheck"> <span>By creating an account, I agree to our <u>Terms of use</u> and <u>Privacy Policy</u></span></label>
-                </div>
-                <div class="checkbox-group">
-                    <label><input type="checkbox" checked> <span>By creating an account, I am also consenting to receive SMS messages and emails, including product new feature updates, events, and marketing promotions.</span></label>
-                </div>
-
                 <div class="form-actions">
                     <button class="btn-signup" onclick="register()">Sign up</button>
-                    <p class="login-link">Already have an account? <span onclick="toggleAuth()">Log in</span></p>
+                    <p class="login-link">Already have an account? <span onclick="toggleAuth()">Log in here</span></p>
                 </div>
             </div>
 
@@ -108,7 +84,7 @@
                 <p style="color: #666; margin-bottom: 30px; font-size: 14px;">Welcome back! Please enter your details.</p>
                 
                 <div class="input-group">
-                    <label>Username</label>
+                    <label>Username (or Admin ID)</label>
                     <input type="text" id="userId" required>
                 </div>
 
@@ -118,7 +94,7 @@
                 </div>
 
                 <div class="form-actions" style="margin-top: 40px;">
-                    <button class="btn-signup" onclick="login()" style="background-color: #111;">Log in</button>
+                    <button class="btn-signup" onclick="login()" style="background-color: #111; color: #fff;">Log in</button>
                     <p class="login-link">Don't have an account? <span onclick="toggleAuth()">Sign up now</span></p>
                 </div>
             </div>
@@ -128,7 +104,6 @@
 
     <script src="app.js"></script>
     <script>
-        // Local logic to toggle the split UI forms
         function toggleAuth() {
             const loginBox = document.getElementById('loginBox');
             const regBox = document.getElementById('regBox');
