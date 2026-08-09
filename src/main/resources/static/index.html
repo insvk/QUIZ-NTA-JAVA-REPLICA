@@ -6,22 +6,43 @@
     <title>GlassQuiz | Portal</title>
     <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-    <div class="glass-panel" id="loginBox">
+<body class="center-content">
+    
+    <div id="loginBox" class="auth-box">
         <h2>GlassQuiz Access</h2>
-        <input type="text" id="userId" placeholder="User ID (Admin: admin@java.in)">
-        <input type="password" id="pwd" placeholder="Password">
-        <button onclick="login()">Sign In</button>
-        <p style="text-align: center; margin-top: 15px; cursor:pointer;" onclick="toggleAuth()">Need a Student Account? Register</p>
+        <input type="text" id="userId" placeholder="Enter User ID" required>
+        
+        <div class="pwd-wrapper">
+            <input type="password" id="pwd" placeholder="Enter Password" required>
+            <span class="eye-icon" onclick="togglePwd('pwd')">👁️</span>
+        </div>
+
+        <button onclick="login()">SIGN IN</button>
+        <p class="switch-txt">Need a Student Account? <span onclick="toggleAuth()">Register</span></p>
     </div>
 
-    <div class="glass-panel hidden" id="regBox">
+    <!-- Updated Registration Modal with Eye Toggles & Profile Pic -->
+    <div id="regBox" class="auth-box hidden">
         <h2>Student Registration</h2>
-        <input type="text" id="regUserId" placeholder="Create User ID">
-        <input type="password" id="regPwd" placeholder="Password">
-        <input type="password" id="regCpwd" placeholder="Confirm Password">
+        
+        <input type="text" id="regName" placeholder="Full Name" required>
+        <input type="email" id="regEmail" placeholder="Email Address" required>
+        <input type="text" id="regUserId" placeholder="Choose Username" required>
+        
+        <div class="pwd-wrapper">
+            <input type="password" id="regPwd" placeholder="Password" required>
+            <span class="eye-icon" onclick="togglePwd('regPwd')">👁️</span>
+        </div>
+        <div class="pwd-wrapper">
+            <input type="password" id="regCpwd" placeholder="Confirm Password" required>
+            <span class="eye-icon" onclick="togglePwd('regCpwd')">👁️</span>
+        </div>
+        
+        <label style="font-size: 12px; margin-top:10px; display:block; color:#ccc;">Profile Picture (Optional)</label>
+        <input type="file" id="regPic" accept="image/*" style="margin-bottom:15px; font-size:12px;">
+
         <button onclick="register()">Create Account</button>
-        <p style="text-align: center; margin-top: 15px; cursor:pointer;" onclick="toggleAuth()">Back to Sign In</p>
+        <p class="switch-txt">Already have an account? <span onclick="toggleAuth()">Sign In</span></p>
     </div>
 
     <script src="app.js"></script>

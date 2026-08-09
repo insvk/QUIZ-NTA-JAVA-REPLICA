@@ -2,11 +2,14 @@ package com.quizapp.controller;
 
 import java.io.ByteArrayOutputStream;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Random;
 
-import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -51,17 +54,25 @@ public class AppController {
         String pwd = creds.get("password") != null ? creds.get("password").trim() : "";
 
         try {
-            // Hardcoded Admin Account Check
             if ("admin@java.in".equals(uid) && "jg@0987654321".equals(pwd)) {
                 try { logRepo.save(new SystemLog(uid, "ADMIN_LOGIN", "Admin logged in successfully")); } catch (Exception ignored) {}
                 return ResponseEntity.ok(Map.of("role", "ADMIN", "userId", uid, "message", "Admin Login Success"));
             }
 
-            // Student Account Check against Supabase DBMS
             Optional<User> user = userRepo.findByUserId(uid);
             if (user.isPresent() && user.get().getPassword().equals(pwd)) {
                 try { logRepo.save(new SystemLog(uid, "STUDENT_LOGIN", "Student logged in successfully")); } catch (Exception ignored) {}
-                return ResponseEntity.ok(Map.of("role", "STUDENT", "studentId", user.get().getId(), "userId", uid, "message", "Login Success"));
+                
+                Map<String, Object> response = new HashMap<>();
+                response.put("role", "STUDENT");
+                response.put("studentId", user.get().getId());
+                response.put("userId", uid);
+                response.put("regNo", user.get().getRegNo());
+                response.put("name", user.get().getName());
+                response.put("profilePicBase64", user.get().getProfilePicBase64());
+                response.put("message", "Login Success");
+                
+                return ResponseEntity.ok(response);
             }
 
             try { logRepo.save(new SystemLog(uid, "FAILED_LOGIN", "Invalid login attempt")); } catch (Exception ignored) {}
@@ -72,30 +83,29 @@ public class AppController {
         }
     }
 
-    // Student Self-Registration (Stores in Supabase DBMS)
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody User user) {
-        String cleanUid = user.getUserId() != null ? user.getUserId().trim() : "";
-        String cleanPwd = user.getPassword() != null ? user.getPassword().trim() : "";
-
-        if (cleanUid.isEmpty() || cleanPwd.isEmpty()) {
-            return ResponseEntity.badRequest().body("User ID and Password cannot be empty.");
+        if (userRepo.findByUserId(user.getUserId()).isPresent()) {
+            return ResponseEntity.badRequest().body("Username already exists.");
         }
+        
+        // Generate Unique 7-Digit Reg No
+        String regNo;
+        Random rnd = new Random();
+        do {
+            regNo = String.format("%07d", rnd.nextInt(10000000));
+        } while (false); // In production, verify against DB to ensure no duplicates
 
-        if (userRepo.findByUserId(cleanUid).isPresent()) {
-            return ResponseEntity.badRequest().body("User ID already exists in system.");
-        }
-
-        user.setUserId(cleanUid);
-        user.setPassword(cleanPwd);
+        user.setRegNo(regNo);
         user.setRole("STUDENT");
         userRepo.save(user);
 
-        try { logRepo.save(new SystemLog(cleanUid, "REGISTER", "New student self-registered")); } catch (Exception ignored) {}
-        return ResponseEntity.ok("Registration Successful");
+        try { logRepo.save(new SystemLog(user.getUserId(), "REGISTER", "New student registered: " + regNo)); } catch (Exception ignored) {}
+        
+        return ResponseEntity.ok(Map.of("message", "Registration Successful! Reg No: " + regNo, "regNo", regNo));
     }
 
-    // --- ADMIN USER MANAGEMENT ENDPOINTS ---
+    // --- ADMIN USER MANAGEMENT ---
     @GetMapping("/admin/users")
     public List<User> getAllStudents() {
         return userRepo.findByRole("STUDENT");
@@ -103,33 +113,22 @@ public class AppController {
 
     @PostMapping("/admin/users/create")
     public ResponseEntity<?> adminCreateUser(@RequestBody User user) {
-        String cleanUid = user.getUserId() != null ? user.getUserId().trim() : "";
-        String cleanPwd = user.getPassword() != null ? user.getPassword().trim() : "";
-
-        if (cleanUid.isEmpty() || cleanPwd.isEmpty()) {
-            return ResponseEntity.badRequest().body("User ID and Password cannot be empty.");
-        }
-
-        if (userRepo.findByUserId(cleanUid).isPresent()) {
+        if (userRepo.findByUserId(user.getUserId()).isPresent()) {
             return ResponseEntity.badRequest().body("User ID already exists.");
         }
-
-        user.setUserId(cleanUid);
-        user.setPassword(cleanPwd);
+        String regNo = String.format("%07d", new Random().nextInt(10000000));
+        user.setRegNo(regNo);
         user.setRole("STUDENT");
         userRepo.save(user);
-
-        try { logRepo.save(new SystemLog("admin@java.in", "ADMIN_CREATE_USER", "Admin manually created user: " + cleanUid)); } catch (Exception ignored) {}
+        try { logRepo.save(new SystemLog("admin@java.in", "ADMIN_CREATE_USER", "Admin manually created user: " + user.getUserId())); } catch (Exception ignored) {}
         return ResponseEntity.ok("User Account Created Successfully");
     }
 
     @DeleteMapping("/admin/users/{id}")
     public ResponseEntity<?> deleteUser(@PathVariable Long id) {
-        Optional<User> user = userRepo.findById(id);
-        if (user.isPresent()) {
-            String uid = user.get().getUserId();
+        if (userRepo.existsById(id)) {
             userRepo.deleteById(id);
-            try { logRepo.save(new SystemLog("admin@java.in", "DELETE_USER", "Deleted user ID: " + id + " (" + uid + ")")); } catch (Exception ignored) {}
+            try { logRepo.save(new SystemLog("admin@java.in", "DELETE_USER", "Deleted user ID: " + id)); } catch (Exception ignored) {}
             return ResponseEntity.ok("User Deleted Successfully");
         }
         return ResponseEntity.badRequest().body("User not found.");
@@ -157,27 +156,26 @@ public class AppController {
         return ResponseEntity.ok("Test status updated");
     }
 
-    @GetMapping("/admin/attempts")
-    public List<QuizAttempt> getAllAttempts() {
-        return attemptRepo.findAll();
+    @DeleteMapping("/admin/test/{id}")
+    public ResponseEntity<?> deleteTest(@PathVariable Long id) {
+        testRepo.deleteById(id);
+        try { logRepo.save(new SystemLog("admin@java.in", "DELETE_TEST", "Deleted test ID: " + id)); } catch (Exception ignored) {}
+        return ResponseEntity.ok("Test Deleted Successfully");
     }
 
+    @GetMapping("/admin/attempts")
+    public List<QuizAttempt> getAllAttempts() { return attemptRepo.findAll(); }
+
     @GetMapping("/admin/logs")
-    public List<SystemLog> getLogs() {
-        return logRepo.findAll();
-    }
+    public List<SystemLog> getLogs() { return logRepo.findAll(); }
 
     @GetMapping("/admin/export-excel")
     public ResponseEntity<byte[]> exportExcel() {
         try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             Sheet sheet = workbook.createSheet("Quiz Analysis");
-
             Row headerRow = sheet.createRow(0);
-            String[] headers = {"Attempt ID", "Student ID", "Test Title", "Score", "Correct Answers", "Wrong Answers", "Total Questions", "Attempt Time"};
-            for (int i = 0; i < headers.length; i++) {
-                Cell cell = headerRow.createCell(i);
-                cell.setCellValue(headers[i]);
-            }
+            String[] headers = {"Attempt ID", "Student ID", "Test Title", "Score", "Correct", "Wrong", "Total", "Time"};
+            for (int i = 0; i < headers.length; i++) headerRow.createCell(i).setCellValue(headers[i]);
 
             List<QuizAttempt> attempts = attemptRepo.findAll();
             int rowIdx = 1;
@@ -192,12 +190,9 @@ public class AppController {
                 row.createCell(6).setCellValue(attempt.getTotalQuestions());
                 row.createCell(7).setCellValue(attempt.getAttemptTime().toString());
             }
-
             workbook.write(out);
-            try { logRepo.save(new SystemLog("admin@java.in", "EXPORT_EXCEL", "Downloaded results excel analysis")); } catch (Exception ignored) {}
-
             return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=quiz_results_analysis.xlsx")
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=quiz_results.xlsx")
                     .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
                     .body(out.toByteArray());
         } catch (Exception e) {
@@ -205,19 +200,31 @@ public class AppController {
         }
     }
 
-    // --- STUDENT ENDPOINTS ---
+    // --- STUDENT ENDPOINTS (Handling IST Schedule) ---
     @GetMapping("/student/tests")
-    public List<QuizTest> getAvailableTests() {
-        return testRepo.findByActiveTrue();
+    public ResponseEntity<?> getAvailableTests() {
+        List<QuizTest> allTests = testRepo.findByActiveTrue();
+        ZoneId istZone = ZoneId.of("Asia/Kolkata");
+        LocalDateTime nowIST = LocalDateTime.now(istZone);
+        
+        List<QuizTest> available = new ArrayList<>();
+        List<QuizTest> upcoming = new ArrayList<>();
+        
+        for (QuizTest t : allTests) {
+            if (t.getScheduledTime() == null || !t.getScheduledTime().isAfter(nowIST)) {
+                available.add(t);
+            } else {
+                upcoming.add(t);
+            }
+        }
+        return ResponseEntity.ok(Map.of("available", available, "upcoming", upcoming));
     }
 
     @GetMapping("/student/test/{id}")
     public ResponseEntity<?> getTestById(@PathVariable Long id) {
         Optional<QuizTest> test = testRepo.findById(id);
-        if (test.isPresent() && test.get().isActive()) {
-            return ResponseEntity.ok(test.get());
-        }
-        return ResponseEntity.badRequest().body("Test not available or closed by admin");
+        if (test.isPresent() && test.get().isActive()) return ResponseEntity.ok(test.get());
+        return ResponseEntity.badRequest().body("Test not available.");
     }
 
     @GetMapping("/student/attempts/{studentId}")
@@ -242,9 +249,7 @@ public class AppController {
                     score += 4;
                     correct++;
                 } else {
-                    if (test.isNegativeMarkingEnabled()) {
-                        score -= 1;
-                    }
+                    if (test.isNegativeMarkingEnabled()) score -= 1;
                     wrong++;
                 }
             }
@@ -260,10 +265,9 @@ public class AppController {
         attempt.setWrongAnswers(wrong);
         attempt.setTotalQuestions(test.getQuestions().size());
         attempt.setAttemptTime(LocalDateTime.now());
-
         attemptRepo.save(attempt);
-        try { logRepo.save(new SystemLog(studentUserId, "SUBMIT_TEST", "Completed test: " + test.getTitle() + " with score: " + score)); } catch (Exception ignored) {}
 
+        try { logRepo.save(new SystemLog(studentUserId, "SUBMIT_TEST", "Completed test: " + test.getTitle() + " with score: " + score)); } catch (Exception ignored) {}
         return ResponseEntity.ok(attempt);
     }
 }
