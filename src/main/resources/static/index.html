@@ -3,221 +3,111 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard | GlassQuiz</title>
+    <title>CAPSTONE JAVA QUIZ | Member Login</title>
     <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
-<body class="admin-light-body">
+<body class="member-login-body">
     
-    <div class="spik-layout">
-        
-        <!-- SIDEBAR -->
-        <aside class="spik-sidebar" id="sidebar">
-            <div class="sidebar-brand">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="#6f42c1"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-                <h2>Glass<span>Admin</span></h2>
-                <button class="mobile-close" onclick="toggleSidebar()">✕</button>
-            </div>
-            <div class="sidebar-menu">
-                <p class="menu-label">MAIN MENU</p>
-                <a href="#" class="menu-item active" onclick="switchAdminView('view-dashboard', this)">
-                    <span>🏠</span> Dashboard
-                </a>
-                <a href="#" class="menu-item" onclick="switchAdminView('view-students', this); loadUsers();">
-                    <span>👥</span> Students
-                </a>
-                <p class="menu-label">EXAMINATIONS</p>
-                <a href="#" class="menu-item" onclick="switchAdminView('view-test-create', this)">
-                    <span>✍️</span> Create Test
-                </a>
-                <a href="#" class="menu-item" onclick="switchAdminView('view-test-manage', this); loadAdminTests();">
-                    <span>📑</span> Manage Tests
-                </a>
-                <a href="#" class="menu-item" onclick="switchAdminView('view-results', this); loadAttempts();">
-                    <span>📊</span> Result Analysis
-                </a>
-            </div>
-        </aside>
-
-        <!-- MAIN CONTENT -->
-        <main class="spik-main">
+    <div class="auth-wrapper">
+        <div class="auth-container">
             
-            <!-- TOP NAVBAR -->
-            <nav class="spik-navbar">
-                <div class="nav-left">
-                    <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
-                    <div class="search-box">
-                        <span>🔍</span>
-                        <input type="text" placeholder="What do you want to find?">
-                    </div>
+            <!-- LEFT SIDE: Illustration -->
+            <div class="auth-left-panel">
+                <div class="graphic-circle">
+                    <!-- Decorative Shapes -->
+                    <div class="deco-shape circle-blue"></div>
+                    <div class="deco-shape triangle-green"></div>
+                    <div class="deco-shape triangle-green-small"></div>
+                    <div class="deco-shape circle-blue-small"></div>
+                    <div class="deco-shape square-grey"></div>
+                    
+                    <!-- Laptop SVG Replica -->
+                    <svg viewBox="0 0 200 150" width="200" height="150" class="laptop-svg">
+                        <!-- Laptop Base -->
+                        <path d="M10,130 h180 v5 a5,5 0 0 1 -5,5 h-170 a5,5 0 0 1 -5,-5 z" fill="#e0e0e0"/>
+                        <!-- Laptop Screen -->
+                        <rect x="25" y="30" width="150" height="100" rx="4" fill="#4a5568"/>
+                        <!-- Screen Inner -->
+                        <rect x="30" y="35" width="140" height="90" fill="#374151"/>
+                        <!-- User Icon on Screen -->
+                        <circle cx="100" cy="70" r="12" fill="none" stroke="#9ca3af" stroke-width="3"/>
+                        <path d="M75,110 c0,-15 10,-25 25,-25 s25,10 25,25" fill="none" stroke="#9ca3af" stroke-width="3" stroke-linecap="round"/>
+                    </svg>
                 </div>
-                <div class="nav-right">
-                    <div class="admin-profile">
-                        <img src="https://ui-avatars.com/api/?name=Admin&background=6f42c1&color=fff" alt="Admin">
-                        <div class="admin-info">
-                            <strong>System Admin</strong>
-                            <span>Administrator</span>
-                        </div>
-                    </div>
-                    <button class="btn-logout" onclick="logout()">Logout</button>
-                </div>
-            </nav>
+            </div>
 
-            <!-- DYNAMIC VIEWS CONTAINER -->
-            <div class="spik-content">
+            <!-- RIGHT SIDE: Forms -->
+            <div class="auth-right-panel">
                 
-                <!-- 1. DASHBOARD HOME VIEW -->
-                <div id="view-dashboard" class="admin-view active">
-                    <h2 class="page-title">Admin Dashboard</h2>
+                <!-- LOGIN FORM -->
+                <div id="loginBox" class="form-box">
+                    <h2>Member Login</h2>
                     
-                    <!-- Top Stats Cards -->
-                    <div class="stats-grid">
-                        <div class="stat-card purple-card">
-                            <div class="stat-info">
-                                <h3>Top Scorer</h3>
-                                <h2 id="statTopScorerName">Loading...</h2>
-                                <p id="statTopScorerScore">Score: 0</p>
-                            </div>
-                            <div class="stat-icon">🏆</div>
-                        </div>
-                        <div class="stat-card blue-card">
-                            <div class="stat-info">
-                                <h3>Live Tests</h3>
-                                <h2 id="statLiveTests">0</h2>
-                                <p>Active right now</p>
-                            </div>
-                            <div class="stat-icon">🟢</div>
-                        </div>
-                        <div class="stat-card orange-card">
-                            <div class="stat-info">
-                                <h3>Upcoming Tests</h3>
-                                <h2 id="statUpcomingTests">0</h2>
-                                <p>Scheduled (IST)</p>
-                            </div>
-                            <div class="stat-icon">⏳</div>
-                        </div>
-                        <div class="stat-card green-card">
-                            <div class="stat-info">
-                                <h3>Finished Attempts</h3>
-                                <h2 id="statFinishedTests">0</h2>
-                                <p>Total submissions</p>
-                            </div>
-                            <div class="stat-icon">📝</div>
-                        </div>
+                    <div class="pill-input-group">
+                        <svg class="input-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                        <input type="text" id="userId" placeholder="Username or Admin ID" required>
                     </div>
 
-                    <div class="dashboard-grid-2">
-                        <!-- Chart Area -->
-                        <div class="dash-card">
-                            <div class="card-header">
-                                <h3>Recent Test Performance (Last 3)</h3>
-                            </div>
-                            <canvas id="performanceChart" height="250"></canvas>
-                        </div>
-                        
-                        <!-- Logs Table -->
-                        <div class="dash-card">
-                            <div class="card-header">
-                                <h3>Recent System Logs</h3>
-                            </div>
-                            <div class="table-responsive">
-                                <table class="clean-table" id="dashLogsTable">
-                                    <thead><tr><th>Time</th><th>User</th><th>Action</th></tr></thead>
-                                    <tbody><!-- Dynamic --></tbody>
-                                </table>
-                            </div>
-                        </div>
+                    <div class="pill-input-group">
+                        <svg class="input-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+                        <input type="password" id="pwd" placeholder="Password" required>
+                        <span class="eye-btn" onclick="togglePwd('pwd')">👁️</span>
                     </div>
-                </div>
 
-                <!-- 2. STUDENT MANAGEMENT VIEW -->
-                <div id="view-students" class="admin-view">
-                    <h2 class="page-title">Student Management</h2>
-                    <div class="dash-card">
-                        <div class="card-header">
-                            <h3>Create New Student Account</h3>
-                        </div>
-                        <div class="form-row-multi">
-                            <input type="text" id="adminNewStudentId" placeholder="Username" class="spik-input">
-                            <input type="text" id="adminNewStudentName" placeholder="Full Name" class="spik-input">
-                            <input type="password" id="adminNewStudentPwd" placeholder="Password" class="spik-input">
-                            <button onclick="adminCreateUser()" class="btn-primary-spik">+ Create</button>
-                        </div>
-                    </div>
+                    <button class="btn-login-green" onclick="login()">LOGIN</button>
                     
-                    <div class="dash-card mt-20">
-                        <div class="card-header">
-                            <h3>All Registered Students</h3>
-                            <button onclick="loadUsers()" class="btn-outline-spik">Refresh</button>
-                        </div>
-                        <div class="table-responsive" id="usersTableContainer"></div>
+                    <p class="forgot-link">Forgot Username / Password?</p>
+                    
+                    <div class="bottom-link-area">
+                        <p class="switch-form-link" onclick="toggleAuth()">Create your Account &rarr;</p>
                     </div>
                 </div>
 
-                <!-- 3. TEST CREATION VIEW -->
-                <div id="view-test-create" class="admin-view">
-                    <h2 class="page-title">Create Examination</h2>
-                    <div class="dash-card">
-                        <div class="form-grid">
-                            <div class="input-group">
-                                <label>Test Title</label>
-                                <input type="text" id="testTitle" placeholder="e.g. JEE Mains Mock 1" class="spik-input">
-                            </div>
-                            <div class="input-group">
-                                <label>Negative Marking</label>
-                                <div style="padding-top:10px;">
-                                    <input type="checkbox" id="negMark" style="width:18px; height:18px; accent-color:#6f42c1;"> Enable (-1)
-                                </div>
-                            </div>
-                            <div class="input-group">
-                                <label>Duration (Minutes)</label>
-                                <input type="number" id="testDuration" value="180" class="spik-input">
-                            </div>
-                            <div class="input-group">
-                                <label>Schedule Open Time (IST)</label>
-                                <input type="datetime-local" id="testSchedule" class="spik-input">
-                            </div>
-                            <div class="input-group" style="grid-column: span 2;">
-                                <label>General Instructions (HTML supported)</label>
-                                <textarea id="testInstructions" rows="3" class="spik-input" placeholder="Enter test instructions..."></textarea>
-                            </div>
-                        </div>
-
-                        <div class="card-header mt-20" style="border-top:1px solid #eee; padding-top:20px;">
-                            <h3>Question Builder</h3>
-                        </div>
-                        <div id="questionsBuilder"></div>
-                        
-                        <div style="display:flex; gap:15px; margin-top:20px;">
-                            <button onclick="addQuestionField()" class="btn-outline-spik">+ Add Question</button>
-                            <button onclick="createTest()" class="btn-primary-spik">Publish Test</button>
-                        </div>
+                <!-- REGISTRATION FORM (Hidden by default) -->
+                <div id="regBox" class="form-box hidden">
+                    <h2>Create Account</h2>
+                    
+                    <div class="pill-input-group">
+                        <svg class="input-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                        <input type="text" id="regName" placeholder="Full Name" required>
                     </div>
-                </div>
 
-                <!-- 4. TEST MANAGEMENT VIEW -->
-                <div id="view-test-manage" class="admin-view">
-                    <h2 class="page-title">Manage Tests</h2>
-                    <div class="dash-card">
-                        <div class="table-responsive" id="adminTestList"></div>
+                    <div class="pill-input-group">
+                        <svg class="input-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                        <input type="email" id="regEmail" placeholder="Email Address" required>
                     </div>
-                </div>
 
-                <!-- 5. RESULT ANALYSIS VIEW -->
-                <div id="view-results" class="admin-view">
-                    <h2 class="page-title">Result Analysis</h2>
-                    <div class="dash-card">
-                        <div class="card-header">
-                            <h3>All Student Attempts</h3>
-                            <button onclick="downloadXLS()" class="btn-success-spik">Export Excel</button>
-                        </div>
-                        <div class="table-responsive" id="attemptsTable"></div>
+                    <div class="pill-input-group">
+                        <svg class="input-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                        <input type="text" id="regUserId" placeholder="Choose Username" required>
+                    </div>
+
+                    <div class="pill-input-group">
+                        <svg class="input-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+                        <input type="password" id="regPwd" placeholder="Password" required>
+                        <span class="eye-btn" onclick="togglePwd('regPwd')">👁️</span>
+                    </div>
+
+                    <div class="pill-input-group">
+                        <svg class="input-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+                        <input type="password" id="regCpwd" placeholder="Confirm Password" required>
+                        <span class="eye-btn" onclick="togglePwd('regCpwd')">👁️</span>
+                    </div>
+
+                    <div class="pill-input-group" style="padding: 5px 20px;">
+                        <input type="file" id="regPic" accept="image/*" style="padding: 10px 0; font-size:12px;">
+                    </div>
+
+                    <button class="btn-login-green" onclick="register()">SIGN UP</button>
+                    
+                    <div class="bottom-link-area">
+                        <p class="switch-form-link" onclick="toggleAuth()">&larr; Back to Login</p>
                     </div>
                 </div>
 
             </div>
-        </main>
+        </div>
     </div>
 
     <script src="app.js"></script>
