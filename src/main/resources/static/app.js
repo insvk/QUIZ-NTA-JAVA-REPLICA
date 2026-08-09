@@ -13,7 +13,7 @@ window.addEventListener('DOMContentLoaded', () => {
         else if (role === 'STUDENT') redirectStudent();
     } else if (path.includes('admin.html')) {
         if (role !== 'ADMIN') return window.location.href = 'index.html';
-        addQuestionField(); loadAdminTests(); loadAttempts(); loadUsers();
+        initAdminDashboard(); // Initializes the Spik Dashboard & Graph
     } else if (path.includes('student.html')) {
         if (role !== 'STUDENT') return window.location.href = 'index.html';
     } else if (path.includes('quiz.html')) {
@@ -22,7 +22,9 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// --- AUTHENTICATION ---
+// ==========================================
+// 1. AUTHENTICATION & REGISTRATION
+// ==========================================
 function toggleAuth() {
     document.getElementById('loginBox')?.classList.toggle('hidden');
     document.getElementById('regBox')?.classList.toggle('hidden');
@@ -107,6 +109,103 @@ async function register() {
 
 function logout() { localStorage.clear(); sessionStorage.clear(); window.location.href = 'index.html'; }
 
+// ==========================================
+// 2. ADMIN DASHBOARD (SPIK THEME & CHARTS)
+// ==========================================
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
+
+function switchAdminView(viewId, element) {
+    document.querySelectorAll('.admin-view').forEach(v => v.classList.remove('active'));
+    document.getElementById(viewId).classList.add('active');
+    
+    if(element) {
+        document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+        element.classList.add('active');
+    }
+    if(viewId === 'view-dashboard') initAdminDashboard();
+}
+
+let dashChart = null;
+
+async function initAdminDashboard() {
+    try {
+        const [testRes, attRes, logRes] = await Promise.all([
+            fetch(`${API_URL}/admin/tests`),
+            fetch(`${API_URL}/admin/attempts`),
+            fetch(`${API_URL}/admin/logs`)
+        ]);
+
+        const tests = await testRes.json();
+        const attempts = await attRes.json();
+        const logs = await logRes.json();
+
+        const now = new Date();
+        let liveCount = 0, upcomingCount = 0;
+        
+        tests.forEach(t => {
+            if(t.active) {
+                if(!t.scheduledTime || new Date(t.scheduledTime) <= now) liveCount++;
+                else upcomingCount++;
+            }
+        });
+
+        document.getElementById('statLiveTests').innerText = liveCount;
+        document.getElementById('statUpcomingTests').innerText = upcomingCount;
+        document.getElementById('statFinishedTests').innerText = attempts.length;
+
+        if(attempts.length > 0) {
+            const sorted = [...attempts].sort((a,b) => b.score - a.score);
+            document.getElementById('statTopScorerName').innerText = sorted[0].studentUserId;
+            document.getElementById('statTopScorerScore').innerText = `Score: ${sorted[0].score} (${sorted[0].testTitle})`;
+        } else {
+            document.getElementById('statTopScorerName').innerText = "No attempts yet";
+            document.getElementById('statTopScorerScore').innerText = "-";
+        }
+
+        const logTable = document.getElementById('dashLogsTable').getElementsByTagName('tbody')[0];
+        logTable.innerHTML = '';
+        logs.slice().reverse().slice(0, 5).forEach(l => {
+            logTable.innerHTML += `<tr>
+                <td style="font-size:12px; color:#888;">${new Date(l.timestamp).toLocaleString()}</td>
+                <td><strong>${l.username}</strong></td>
+                <td>${l.action}</td>
+            </tr>`;
+        });
+
+        const testScores = {};
+        attempts.forEach(a => {
+            if(!testScores[a.testTitle]) testScores[a.testTitle] = { total: 0, count: 0 };
+            testScores[a.testTitle].total += a.score;
+            testScores[a.testTitle].count += 1;
+        });
+
+        const labels = []; const data = [];
+        Object.keys(testScores).slice(-3).forEach(title => {
+            labels.push(title.substring(0, 15) + "...");
+            data.push((testScores[title].total / testScores[title].count).toFixed(2));
+        });
+
+        if(dashChart) dashChart.destroy();
+        const ctx = document.getElementById('performanceChart').getContext('2d');
+        dashChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels.length ? labels : ['No Data'],
+                datasets: [{
+                    label: 'Avg Score',
+                    data: data.length ? data : [0],
+                    borderColor: '#6f42c1',
+                    backgroundColor: 'rgba(111, 66, 193, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+    } catch (e) { console.log("Dash init error:", e); }
+}
+
 // --- ADMIN USER CRUD ---
 async function loadUsers() {
     const res = await fetch(`${API_URL}/admin/users`);
@@ -115,12 +214,13 @@ async function loadUsers() {
         const container = document.getElementById('usersTableContainer');
         if (!container) return;
         if (users.length === 0) return container.innerHTML = `<p>No student accounts found.</p>`;
-        let html = `<table><tr><th>Reg No</th><th>Name</th><th>Username</th><th>Action</th></tr>`;
+        
+        let html = `<table class="clean-table"><thead><tr><th>Reg No</th><th>Name</th><th>Username</th><th>Action</th></tr></thead><tbody>`;
         users.forEach(u => {
             html += `<tr><td>${u.regNo || 'N/A'}</td><td>${u.name || 'N/A'}</td><td><strong>${u.userId}</strong></td>
-                <td><button onclick="deleteUser(${u.id}, '${u.userId}')" style="background:#f12711; padding:5px 10px; font-size:12px;">Delete</button></td></tr>`;
+                <td><button onclick="deleteUser(${u.id}, '${u.userId}')" class="btn-danger-spik">Delete</button></td></tr>`;
         });
-        container.innerHTML = html + `</table>`;
+        container.innerHTML = html + `</tbody></table>`;
     }
 }
 
@@ -150,23 +250,23 @@ function addQuestionField() {
     const container = document.getElementById('questionsBuilder');
     if (!container) return;
     const qDiv = document.createElement('div');
-    qDiv.className = 'glass-card q-block';
-    qDiv.style.marginBottom = '10px';
+    qDiv.className = 'q-block';
     qDiv.id = `q_block_${questionCount}`;
     qDiv.innerHTML = `
         <h5>Question ${questionCount}</h5>
-        <input type="text" class="q-section" placeholder="Section Name (e.g., PHYSICS - SEC-I)" required>
-        <input type="text" class="q-text" placeholder="Enter Question Text" required>
-        <label style="font-size: 12px;">Add Question Image (Optional):</label>
-        <input type="file" class="q-img" accept="image/*" style="margin: 5px 0;">
-        <input type="text" class="q-optA" placeholder="Option A" required>
-        <input type="text" class="q-optB" placeholder="Option B" required>
-        <input type="text" class="q-optC" placeholder="Option C" required>
-        <input type="text" class="q-optD" placeholder="Option D" required>
-        <select class="q-correct">
-            <option value="A">Correct Answer: A</option><option value="B">Correct Answer: B</option>
-            <option value="C">Correct Answer: C</option><option value="D">Correct Answer: D</option>
-        </select>`;
+        <div class="form-grid">
+            <input type="text" class="q-section spik-input" placeholder="Section Name (e.g., PHYSICS)" required>
+            <input type="text" class="q-text spik-input" placeholder="Enter Question Text" required>
+            <input type="text" class="q-optA spik-input" placeholder="Option A" required>
+            <input type="text" class="q-optB spik-input" placeholder="Option B" required>
+            <input type="text" class="q-optC spik-input" placeholder="Option C" required>
+            <input type="text" class="q-optD spik-input" placeholder="Option D" required>
+            <select class="q-correct spik-input">
+                <option value="A">Correct Answer: A</option><option value="B">Correct Answer: B</option>
+                <option value="C">Correct Answer: C</option><option value="D">Correct Answer: D</option>
+            </select>
+            <input type="file" class="q-img spik-input" accept="image/*">
+        </div>`;
     container.appendChild(qDiv);
 }
 
@@ -174,7 +274,7 @@ async function createTest() {
     const title = document.getElementById('testTitle').value.trim();
     const negMark = document.getElementById('negMark').checked;
     const duration = document.getElementById('testDuration').value || 180;
-    const schedule = document.getElementById('testSchedule').value; // YYYY-MM-DDTHH:mm
+    const schedule = document.getElementById('testSchedule').value; 
     const instructions = document.getElementById('testInstructions').value.trim();
     const blocks = document.querySelectorAll('.q-block');
     if (!title) return alert("Enter a Test Title");
@@ -205,24 +305,44 @@ async function loadAdminTests() {
     const tests = await res.json();
     const container = document.getElementById('adminTestList');
     if (!container) return;
-    let html = '';
+    
+    let html = `<table class="clean-table"><thead><tr><th>Test Title</th><th>Status</th><th>Schedule</th><th>Links & Actions</th></tr></thead><tbody>`;
     tests.forEach(t => {
         const shareUrl = `${window.location.origin}/index.html?testId=${t.id}`;
-        html += `<div style="padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
-            <strong>${t.title}</strong> [${t.active ? 'ACTIVE' : 'DISABLED'}] <br>
-            <span style="font-size:12px">Scheduled: ${t.scheduledTime ? new Date(t.scheduledTime).toLocaleString() : 'Immediate'}</span><br>
-            <button onclick="toggleTest(${t.id})" style="padding: 5px; font-size: 10px; width: auto;">Toggle Access</button>
-            <button onclick="navigator.clipboard.writeText('${shareUrl}'); alert('Copied share link!');" style="padding: 5px; font-size: 10px; background: #11998e; width: auto;">Copy Link</button>
-            <button onclick="deleteAdminTest(${t.id})" style="padding: 5px; font-size: 10px; background: #f12711; width: auto;">Delete Test</button>
-        </div>`;
+        html += `<tr>
+            <td><strong>${t.title}</strong></td>
+            <td><span style="padding:4px 8px; border-radius:4px; font-size:11px; background:${t.active?'#d4f7e3; color:#10b981':'#fee2e2; color:#dc2626'}">${t.active ? 'ACTIVE' : 'DISABLED'}</span></td>
+            <td>${t.scheduledTime ? new Date(t.scheduledTime).toLocaleString() : 'Immediate'}</td>
+            <td>
+                <button onclick="toggleTest(${t.id})" class="btn-outline-spik" style="padding:4px 8px; font-size:11px;">Toggle</button>
+                <button onclick="navigator.clipboard.writeText('${shareUrl}'); alert('Copied!');" class="btn-primary-spik" style="padding:4px 8px; font-size:11px;">Copy Link</button>
+                <button onclick="deleteAdminTest(${t.id})" class="btn-danger-spik">Delete</button>
+            </td>
+        </tr>`;
     });
-    container.innerHTML = html;
+    container.innerHTML = html + `</tbody></table>`;
 }
 
 async function toggleTest(id) { await fetch(`${API_URL}/admin/test/toggle/${id}`, { method: 'POST' }); loadAdminTests(); }
 async function deleteAdminTest(id) { if(!confirm("Permanently delete this test?")) return; await fetch(`${API_URL}/admin/test/${id}`, { method: 'DELETE' }); loadAdminTests(); }
 
-// --- STUDENT PORTAL (LIVE & UPCOMING) ---
+async function loadAttempts() {
+    try {
+        const res = await fetch(`${API_URL}/admin/attempts`);
+        if (!res.ok) return;
+        const attempts = await res.json();
+        const table = document.getElementById('attemptsTable');
+        if (!table) return;
+        let html = `<table class="clean-table"><thead><tr><th>ID</th><th>Student</th><th>Test</th><th>Score</th><th>Correct</th><th>Wrong</th><th>Total</th></tr></thead><tbody>`;
+        attempts.forEach(a => html += `<tr><td>${a.id}</td><td><strong>${a.studentUserId || a.studentId}</strong></td><td>${a.testTitle}</td><td><strong style="color:#6f42c1">${a.score}</strong></td><td>${a.correctAnswers}</td><td>${a.wrongAnswers}</td><td>${a.totalQuestions}</td></tr>`);
+        table.innerHTML = html + `</tbody></table>`;
+    } catch (err) {}
+}
+function downloadXLS() { window.location.href = `${API_URL}/admin/export-excel`; }
+
+// ==========================================
+// 3. STUDENT PORTAL (NLEARN DASHBOARD)
+// ==========================================
 async function loadStudentPortal() {
     const res = await fetch(`${API_URL}/student/tests`);
     if (!res.ok) return;
@@ -257,8 +377,9 @@ async function loadStudentPortal() {
 }
 function startQuiz(testId) { localStorage.setItem('currentTestId', testId); window.location.href = 'quiz.html'; }
 
-// --- EXAM ENGINE LOGIC ---
-// --- EXAM ENGINE LOGIC (NTA/JEE EXACT REPLICA) ---
+// ==========================================
+// 4. EXAM ENGINE LOGIC (NTA/JEE REPLICA)
+// ==========================================
 let examData = null, currentQIndex = 0, examTimer = null, remainingSeconds = 0, qStates = [], qAnswers = [];
 
 async function loadExamEngine() {
@@ -316,7 +437,6 @@ function loadQuestion(index) {
     currentQIndex = index;
     const q = examData.questions[index];
     
-    // Change to 'Not Answered' (1) if it was 'Not Visited' (0)
     if (qStates[index] === 0) qStates[index] = 1;
 
     document.getElementById('qNumberDisplay').innerText = `Question ${index + 1}`;
@@ -351,7 +471,6 @@ function updatePalette() {
         else if (s===4) { cls='badge-amr'; counts.amr++; } 
         else counts.nv++;
         
-        // Outline the currently viewed question
         let styleStr = idx === currentQIndex ? 'box-shadow: 0 0 0 2px #000;' : '';
         grid.innerHTML += `<div class="badge ${cls}" style="${styleStr}" onclick="loadQuestion(${idx})">${idx + 1}</div>`;
     });
@@ -446,24 +565,4 @@ async function submitExamFinal() {
                 </div>`;
         }
     } catch (err) { alert("Failed to submit exam due to network error."); }
-}
-
-// Ensure Admin Data loads normally
-async function loadAttempts() {
-    try {
-        const res = await fetch(`${API_URL}/admin/attempts`);
-        if (!res.ok) return;
-        const attempts = await res.json();
-        const table = document.getElementById('attemptsTable');
-        if (!table) return;
-        let html = `<table><tr><th>ID</th><th>Student</th><th>Test</th><th>Score</th><th>Correct</th><th>Wrong</th><th>Total</th></tr>`;
-        attempts.forEach(a => html += `<tr><td>${a.id}</td><td>${a.studentUserId || a.studentId}</td><td>${a.testTitle}</td><td>${a.score}</td><td>${a.correctAnswers}</td><td>${a.wrongAnswers}</td><td>${a.totalQuestions}</td></tr>`);
-        table.innerHTML = html + `</table>`;
-    } catch (err) {}
-}
-function downloadXLS() { window.location.href = `${API_URL}/admin/export-excel`; }
-async function loadLogs() {
-    const res = await fetch(`${API_URL}/admin/logs`);
-    const logs = await res.json();
-    document.getElementById('logsContainer').innerHTML = logs.map(l => `<div>[${l.timestamp}] <b>${l.username}</b>: ${l.action} - ${l.details}</div>`).join('');
 }
