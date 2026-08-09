@@ -258,99 +258,197 @@ async function loadStudentPortal() {
 function startQuiz(testId) { localStorage.setItem('currentTestId', testId); window.location.href = 'quiz.html'; }
 
 // --- EXAM ENGINE LOGIC ---
+// --- EXAM ENGINE LOGIC (NTA/JEE EXACT REPLICA) ---
 let examData = null, currentQIndex = 0, examTimer = null, remainingSeconds = 0, qStates = [], qAnswers = [];
 
 async function loadExamEngine() {
     const testId = localStorage.getItem('currentTestId');
     const res = await fetch(`${API_URL}/student/test/${testId}`);
     if (!res.ok) { alert("Exam unavailable."); return window.location.href = 'student.html'; }
+    
     examData = await res.json();
     document.getElementById('examMainTitle').innerText = examData.title;
-    document.getElementById('instructionContent').innerHTML = examData.instructions || "<p>No instructions provided.</p>";
-    qStates = new Array(examData.questions.length).fill(0);
+    document.getElementById('instructionContent').innerHTML = examData.instructions || "<p>No specific instructions provided.</p>";
+    
+    qStates = new Array(examData.questions.length).fill(0); // 0 = Not Visited
     qAnswers = new Array(examData.questions.length).fill(null);
-    document.getElementById('instructionsScreen').style.display = 'block';
+    
+    startExamTimer();
 }
 
 function startExamTimer() {
-    document.getElementById('instructionsScreen').style.display = 'none';
-    document.getElementById('examScreen').style.display = 'flex';
     remainingSeconds = (examData.durationMinutes || 180) * 60;
+    
     examTimer = setInterval(() => {
-        if(remainingSeconds <= 0) { clearInterval(examTimer); alert("Time is up! Auto-submitting..."); submitExamFinal(); return; }
+        if(remainingSeconds <= 0) { 
+            clearInterval(examTimer); 
+            alert("Time is up! Auto-submitting..."); 
+            submitExamFinal(); 
+            return; 
+        }
         remainingSeconds--;
         const h = Math.floor(remainingSeconds / 3600).toString().padStart(2, '0');
         const m = Math.floor((remainingSeconds % 3600) / 60).toString().padStart(2, '0');
         const s = (remainingSeconds % 60).toString().padStart(2, '0');
         document.getElementById('timeRemaining').innerText = `${h}:${m}:${s}`;
     }, 1000);
-    buildSections(); loadQuestion(0);
+    
+    buildSections(); 
+    loadQuestion(0);
 }
 
 function buildSections() {
     const sections = [...new Set(examData.questions.map(q => q.sectionName || 'GENERAL'))];
-    document.getElementById('sectionsBar').innerHTML = sections.map((s, idx) => `<div class="sec-tab ${idx===0?'active':''}" onclick="jumpToSection('${s}', this)">${s}</div>`).join('');
+    document.getElementById('sectionsBar').innerHTML = sections.map((s, idx) => 
+        `<div class="sec-tab ${idx===0?'active':''}" onclick="jumpToSection('${s}', this)">${s}</div>`
+    ).join('');
 }
+
 function jumpToSection(secName, element) {
     document.querySelectorAll('.sec-tab').forEach(t => t.classList.remove('active'));
     element.classList.add('active');
     const idx = examData.questions.findIndex(q => (q.sectionName || 'GENERAL') === secName);
     if(idx !== -1) loadQuestion(idx);
 }
+
 function loadQuestion(index) {
     if (index < 0 || index >= examData.questions.length) return;
     currentQIndex = index;
     const q = examData.questions[index];
+    
+    // Change to 'Not Answered' (1) if it was 'Not Visited' (0)
     if (qStates[index] === 0) qStates[index] = 1;
 
     document.getElementById('qNumberDisplay').innerText = `Question ${index + 1}`;
     document.getElementById('questionText').innerHTML = q.questionText;
-    document.getElementById('questionImageContainer').innerHTML = q.imageBase64 ? `<img src="${q.imageBase64}" style="max-width:400px; display:block; margin-top:10px;">` : '';
+    document.getElementById('questionImageContainer').innerHTML = q.imageBase64 ? `<img src="${q.imageBase64}" style="max-width:100%; border-radius:8px; margin-top:15px; display:block;">` : '';
+    
     ['A','B','C','D'].forEach(l => document.getElementById(`opt${l}Text`).innerText = q[`option${l}`]);
-    document.querySelectorAll('input[name="examOpt"]').forEach(rb => { rb.checked = (rb.value === qAnswers[index]); });
+    
+    document.querySelectorAll('input[name="examOpt"]').forEach(rb => { 
+        rb.checked = (rb.value === qAnswers[index]); 
+    });
 
     const activeSec = q.sectionName || 'GENERAL';
-    document.querySelectorAll('.sec-tab').forEach(t => { t.classList.toggle('active', t.innerText === activeSec); });
+    document.querySelectorAll('.sec-tab').forEach(t => { 
+        t.classList.toggle('active', t.innerText === activeSec); 
+    });
+    
     updatePalette();
 }
+
 function updatePalette() {
-    const grid = document.getElementById('questionGrid'); grid.innerHTML = '';
+    const grid = document.getElementById('questionGrid'); 
+    grid.innerHTML = '';
+    
     let counts = {nv:0, na:0, ans:0, mr:0, amr:0};
+    
     qStates.forEach((s, idx) => {
         let cls = 'badge-nv';
-        if (s===1) { cls='badge-na'; counts.na++; } else if (s===2) { cls='badge-ans'; counts.ans++; } else if (s===3) { cls='badge-mr'; counts.mr++; } else if (s===4) { cls='badge-amr'; counts.amr++; } else counts.nv++;
-        grid.innerHTML += `<div class="badge ${cls}" style="${idx === currentQIndex ? 'border: 2px solid #000;' : ''}" onclick="loadQuestion(${idx})">${idx + 1}</div>`;
+        if (s===1) { cls='badge-na'; counts.na++; } 
+        else if (s===2) { cls='badge-ans'; counts.ans++; } 
+        else if (s===3) { cls='badge-mr'; counts.mr++; } 
+        else if (s===4) { cls='badge-amr'; counts.amr++; } 
+        else counts.nv++;
+        
+        // Outline the currently viewed question
+        let styleStr = idx === currentQIndex ? 'box-shadow: 0 0 0 2px #000;' : '';
+        grid.innerHTML += `<div class="badge ${cls}" style="${styleStr}" onclick="loadQuestion(${idx})">${idx + 1}</div>`;
     });
+    
     ['nv','na','ans','mr','amr'].forEach(k => document.getElementById(`count-${k}`).innerText = counts[k]);
 }
 
-function getCurrentSelection() { const sel = document.querySelector('input[name="examOpt"]:checked'); return sel ? sel.value : null; }
-function saveAndNext() { const ans = getCurrentSelection(); if(ans){ qAnswers[currentQIndex]=ans; qStates[currentQIndex]=2; }else{ qAnswers[currentQIndex]=null; qStates[currentQIndex]=1; } nextQuestion(); }
-function saveAndMark() { const ans = getCurrentSelection(); if(ans){ qAnswers[currentQIndex]=ans; qStates[currentQIndex]=4; }else{ qAnswers[currentQIndex]=null; qStates[currentQIndex]=3; } nextQuestion(); }
-function clearResponse() { document.querySelectorAll('input[name="examOpt"]').forEach(rb => rb.checked = false); qAnswers[currentQIndex]=null; qStates[currentQIndex]=1; updatePalette(); }
-function nextQuestion() { if (currentQIndex < examData.questions.length - 1) loadQuestion(currentQIndex + 1); else updatePalette(); }
-function prevQuestion() { if (currentQIndex > 0) loadQuestion(currentQIndex - 1); }
+function getCurrentSelection() { 
+    const sel = document.querySelector('input[name="examOpt"]:checked'); 
+    return sel ? sel.value : null; 
+}
+
+function saveAndNext() { 
+    const ans = getCurrentSelection(); 
+    if(ans){ 
+        qAnswers[currentQIndex] = ans; 
+        qStates[currentQIndex] = 2; // Answered
+    } else { 
+        qAnswers[currentQIndex] = null; 
+        qStates[currentQIndex] = 1; // Not Answered
+    } 
+    nextQuestion(); 
+}
+
+function saveAndMark() { 
+    const ans = getCurrentSelection(); 
+    if(ans){ 
+        qAnswers[currentQIndex] = ans; 
+        qStates[currentQIndex] = 4; // Answered & Marked
+    } else { 
+        qAnswers[currentQIndex] = null; 
+        qStates[currentQIndex] = 3; // Marked for Review
+    } 
+    nextQuestion(); 
+}
+
+function clearResponse() { 
+    document.querySelectorAll('input[name="examOpt"]').forEach(rb => rb.checked = false); 
+    qAnswers[currentQIndex] = null; 
+    qStates[currentQIndex] = 1; // Reverts to Not Answered
+    updatePalette(); 
+}
+
+function nextQuestion() { 
+    if (currentQIndex < examData.questions.length - 1) loadQuestion(currentQIndex + 1); 
+    else updatePalette(); 
+}
+
+function prevQuestion() { 
+    if (currentQIndex > 0) loadQuestion(currentQIndex - 1); 
+}
+
+function toggleInstructions() {
+    const modal = document.getElementById('instructionsModal');
+    modal.classList.toggle('hidden');
+}
 
 async function submitExamFinal() {
     if(!confirm("Are you sure you want to submit the exam?")) return;
     clearInterval(examTimer);
+    
     const answersMap = {};
-    examData.questions.forEach((q, idx) => { if(qAnswers[idx]) answersMap[q.id] = qAnswers[idx]; });
-    const payload = { testId: examData.id, studentId: localStorage.getItem('studentId'), studentUserId: localStorage.getItem('userId'), answers: answersMap };
+    examData.questions.forEach((q, idx) => { 
+        if(qAnswers[idx]) answersMap[q.id] = qAnswers[idx]; 
+    });
+    
+    const payload = { 
+        testId: examData.id, 
+        studentId: localStorage.getItem('studentId'), 
+        studentUserId: localStorage.getItem('userId'), 
+        answers: answersMap 
+    };
+    
     try {
-        const res = await fetch(`${API_URL}/student/submit`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        const res = await fetch(`${API_URL}/student/submit`, { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'application/json' }, 
+            body: JSON.stringify(payload) 
+        });
+        
         if (res.ok) {
             const result = await res.json();
-            document.getElementById('examScreen').innerHTML = `<div style="text-align:center; padding: 50px; background: #fff; border-radius: 8px; margin: auto; max-width: 600px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
-                <h1 style="color: #333;">Exam Submitted Successfully!</h1>
-                <h2 style="color:#28a745; font-size: 36px; margin: 20px 0;">Score: ${result.score}</h2>
-                <p style="font-size: 18px; color: #555;">Correct: <strong>${result.correctAnswers}</strong> | Wrong: <strong>${result.wrongAnswers}</strong></p>
-                <button onclick="window.location.href='student.html'" class="btn-primary" style="margin-top:30px;">Return to Dashboard</button>
-            </div>`;
+            document.getElementById('examMainTitle').innerText = "Exam Completed";
+            document.querySelector('.jee-main-layout').innerHTML = `
+                <div style="flex:1; display:flex; align-items:center; justify-content:center; background:#fff;">
+                    <div style="text-align:center; padding: 50px; background: #fff; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
+                        <h1 style="color: #1f2937;">Exam Submitted Successfully!</h1>
+                        <h2 style="color:#01c55d; font-size: 40px; margin: 20px 0;">Score: ${result.score}</h2>
+                        <p style="font-size: 16px; color: #4b5563;">Correct: <strong>${result.correctAnswers}</strong> | Wrong: <strong>${result.wrongAnswers}</strong></p>
+                        <button onclick="window.location.href='student.html'" class="btn-save-next" style="margin-top:30px; font-size:16px; padding:12px 30px;">Return to Dashboard</button>
+                    </div>
+                </div>`;
         }
     } catch (err) { alert("Failed to submit exam due to network error."); }
 }
 
+// Ensure Admin Data loads normally
 async function loadAttempts() {
     try {
         const res = await fetch(`${API_URL}/admin/attempts`);

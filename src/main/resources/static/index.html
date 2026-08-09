@@ -3,48 +3,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GlassQuiz | Portal</title>
+    <title>GlassQuiz | Access</title>
     <link rel="stylesheet" href="styles.css">
+    <!-- Using Inter font for that sleek, modern startup look -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
-<body class="center-content">
+<body class="split-auth-body">
     
-    <div id="loginBox" class="auth-box">
-        <h2>GlassQuiz Access</h2>
-        <input type="text" id="userId" placeholder="Enter User ID" required>
-        
-        <div class="pwd-wrapper">
-            <input type="password" id="pwd" placeholder="Enter Password" required>
-            <span class="eye-icon" onclick="togglePwd('pwd')">👁️</span>
+    <!-- TOP NAVIGATION -->
+    <nav class="auth-nav">
+        <div class="nav-left">
+            <div class="nav-logo-circle"></div>
+        </div>
+        <div class="nav-right">
+            <div class="search-pill">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                Search
+            </div>
+            <div class="lang-select">English (United States) ▾</div>
+            <button class="nav-login-btn" onclick="toggleAuth()">Log in</button>
+        </div>
+    </nav>
+
+    <main class="auth-main">
+        <!-- LEFT PANEL (Dark Mode & Graphics) -->
+        <div class="auth-left">
+            <h1>Learn with us</h1>
+            <p>Access to thousands of test resources, scheduled exams, and study templates</p>
+            
+            <!-- Abstract Geometric Wireframe (SVG) -->
+            <div class="geometric-graphic">
+                <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="40" cy="20" r="10" fill="none" stroke="#fff" stroke-width="2"/>
+                    <polygon points="10,120 40,50 150,80 100,180" fill="none" stroke="#fff" stroke-width="2"/>
+                    <polygon points="40,50 100,180 10,120" fill="none" stroke="#fff" stroke-width="2"/>
+                    <line x1="40" y1="50" x2="180" y2="150" stroke="#fff" stroke-width="2"/>
+                    <circle cx="160" cy="170" r="10" fill="none" stroke="#fff" stroke-width="2"/>
+                    <g fill="#fff">
+                        <circle cx="120" cy="100" r="1.5"/><circle cx="140" cy="100" r="1.5"/>
+                        <circle cx="120" cy="120" r="1.5"/><circle cx="140" cy="120" r="1.5"/>
+                        <circle cx="120" cy="140" r="1.5"/><circle cx="140" cy="140" r="1.5"/>
+                    </g>
+                    <rect x="10" y="170" width="8" height="8" fill="#fff"/><rect x="25" y="170" width="8" height="8" fill="#fff"/><rect x="40" y="170" width="8" height="8" fill="#fff"/><rect x="55" y="170" width="8" height="8" fill="#fff"/>
+                </svg>
+            </div>
         </div>
 
-        <button onclick="login()">SIGN IN</button>
-        <p class="switch-txt">Need a Student Account? <span onclick="toggleAuth()">Register</span></p>
-    </div>
+        <!-- RIGHT PANEL (White Card Form) -->
+        <div class="auth-right">
+            
+            <!-- REGISTRATION FORM -->
+            <div id="regBox" class="auth-card">
+                <h2>Sign up now</h2>
+                
+                <div class="form-row">
+                    <div class="input-group">
+                        <label>Full name</label>
+                        <input type="text" id="regName" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Username</label>
+                        <input type="text" id="regUserId" required>
+                    </div>
+                </div>
 
-    <!-- Updated Registration Modal with Eye Toggles & Profile Pic -->
-    <div id="regBox" class="auth-box hidden">
-        <h2>Student Registration</h2>
-        
-        <input type="text" id="regName" placeholder="Full Name" required>
-        <input type="email" id="regEmail" placeholder="Email Address" required>
-        <input type="text" id="regUserId" placeholder="Choose Username" required>
-        
-        <div class="pwd-wrapper">
-            <input type="password" id="regPwd" placeholder="Password" required>
-            <span class="eye-icon" onclick="togglePwd('regPwd')">👁️</span>
-        </div>
-        <div class="pwd-wrapper">
-            <input type="password" id="regCpwd" placeholder="Confirm Password" required>
-            <span class="eye-icon" onclick="togglePwd('regCpwd')">👁️</span>
-        </div>
-        
-        <label style="font-size: 12px; margin-top:10px; display:block; color:#ccc;">Profile Picture (Optional)</label>
-        <input type="file" id="regPic" accept="image/*" style="margin-bottom:15px; font-size:12px;">
+                <div class="input-group">
+                    <label>Email address</label>
+                    <input type="email" id="regEmail" required>
+                </div>
 
-        <button onclick="register()">Create Account</button>
-        <p class="switch-txt">Already have an account? <span onclick="toggleAuth()">Sign In</span></p>
-    </div>
+                <div class="input-group">
+                    <label>Profile Picture (Optional)</label>
+                    <input type="file" id="regPic" accept="image/*" class="file-input">
+                </div>
+
+                <div class="form-row">
+                    <div class="input-group pwd-group">
+                        <label>Password <span class="eye-toggle" onclick="togglePwd('regPwd')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle><line x1="1" y1="1" x2="23" y2="23"></line></svg> Hide</span></label>
+                        <input type="password" id="regPwd" required>
+                    </div>
+                    <div class="input-group pwd-group">
+                        <label>Confirm password <span class="eye-toggle" onclick="togglePwd('regCpwd')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle><line x1="1" y1="1" x2="23" y2="23"></line></svg> Hide</span></label>
+                        <input type="password" id="regCpwd" required>
+                    </div>
+                </div>
+                <p class="pwd-hint">Use 8 or more characters with a mix of letters, numbers & symbols</p>
+
+                <div class="checkbox-group">
+                    <label><input type="checkbox" id="termsCheck"> <span>By creating an account, I agree to our <u>Terms of use</u> and <u>Privacy Policy</u></span></label>
+                </div>
+                <div class="checkbox-group">
+                    <label><input type="checkbox" checked> <span>By creating an account, I am also consenting to receive SMS messages and emails, including product new feature updates, events, and marketing promotions.</span></label>
+                </div>
+
+                <div class="form-actions">
+                    <button class="btn-signup" onclick="register()">Sign up</button>
+                    <p class="login-link">Already have an account? <span onclick="toggleAuth()">Log in</span></p>
+                </div>
+            </div>
+
+            <!-- LOGIN FORM (Hidden by default) -->
+            <div id="loginBox" class="auth-card hidden">
+                <h2>Log in</h2>
+                <p style="color: #666; margin-bottom: 30px; font-size: 14px;">Welcome back! Please enter your details.</p>
+                
+                <div class="input-group">
+                    <label>Username</label>
+                    <input type="text" id="userId" required>
+                </div>
+
+                <div class="input-group pwd-group">
+                    <label>Password <span class="eye-toggle" onclick="togglePwd('pwd')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle><line x1="1" y1="1" x2="23" y2="23"></line></svg> Hide</span></label>
+                    <input type="password" id="pwd" required>
+                </div>
+
+                <div class="form-actions" style="margin-top: 40px;">
+                    <button class="btn-signup" onclick="login()" style="background-color: #111;">Log in</button>
+                    <p class="login-link">Don't have an account? <span onclick="toggleAuth()">Sign up now</span></p>
+                </div>
+            </div>
+
+        </div>
+    </main>
 
     <script src="app.js"></script>
+    <script>
+        // Local logic to toggle the split UI forms
+        function toggleAuth() {
+            const loginBox = document.getElementById('loginBox');
+            const regBox = document.getElementById('regBox');
+            
+            if (loginBox.classList.contains('hidden')) {
+                loginBox.classList.remove('hidden');
+                regBox.classList.add('hidden');
+            } else {
+                loginBox.classList.add('hidden');
+                regBox.classList.remove('hidden');
+            }
+        }
+    </script>
 </body>
 </html>

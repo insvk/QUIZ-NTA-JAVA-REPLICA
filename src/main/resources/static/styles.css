@@ -198,3 +198,311 @@ th { background: rgba(255,255,255,0.1); }
 .upcoming-card:hover { transform: none; }
 
 .floating-chat-btn { position: fixed; bottom: 30px; right: 30px; background: #007bff; color: #fff; border: none; padding: 12px 25px; border-radius: 30px; font-size: 16px; font-weight: 500; box-shadow: 0 10px 20px rgba(0,123,255,0.3); cursor: pointer; z-index: 1000; }
+
+/* =========================================================
+   NEW SPLIT SCREEN AUTH UI (PRO MAXX)
+   ========================================================= */
+
+.split-auth-body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', sans-serif;
+    background-color: #222222; /* Matches the dark gray void */
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* --- Top Nav --- */
+.auth-nav {
+    background-color: #ffffff;
+    height: 60px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 40px;
+}
+.nav-logo-circle {
+    width: 32px;
+    height: 32px;
+    background-color: #d9d9d9;
+    border-radius: 50%;
+}
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    font-size: 14px;
+    color: #333;
+}
+.search-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 16px;
+    border: 1px solid #e0e0e0;
+    border-radius: 20px;
+    color: #888;
+    cursor: pointer;
+}
+.lang-select { cursor: pointer; }
+.nav-login-btn {
+    background-color: #111;
+    color: #fff;
+    border: none;
+    padding: 8px 24px;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+/* --- Main Area --- */
+.auth-main {
+    display: flex;
+    flex: 1;
+    padding: 40px;
+    gap: 40px;
+}
+
+/* --- Left Side Content --- */
+.auth-left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-left: 40px;
+    color: #fff;
+}
+.auth-left h1 {
+    font-size: 48px;
+    font-weight: 600;
+    margin: 0 0 16px 0;
+}
+.auth-left p {
+    font-size: 20px;
+    color: #a0a0a0;
+    max-width: 400px;
+    line-height: 1.4;
+    margin: 0 0 60px 0;
+}
+.geometric-graphic {
+    width: 300px;
+    height: 300px;
+}
+
+/* --- Right Side Card --- */
+.auth-right {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.auth-card {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 40px 50px;
+    width: 100%;
+    max-width: 550px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    color: #111;
+}
+.auth-card.hidden { display: none; }
+.auth-card h2 {
+    font-size: 28px;
+    font-weight: 600;
+    margin: 0 0 30px 0;
+}
+
+/* --- Form Fields --- */
+.form-row {
+    display: flex;
+    gap: 20px;
+}
+.form-row .input-group { flex: 1; }
+.input-group {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+}
+.input-group label {
+    font-size: 13px;
+    color: #555;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.input-group input {
+    padding: 12px 16px;
+    border: 1px solid #dcdcdc;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+    outline: none;
+    transition: border-color 0.2s;
+    background: transparent;
+}
+.input-group input:focus { border-color: #111; }
+.file-input {
+    padding: 9px !important;
+    font-size: 13px !important;
+    color: #666;
+}
+
+/* --- Passwords & Checks --- */
+.eye-toggle {
+    color: #888;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+}
+.eye-toggle:hover { color: #111; }
+.pwd-hint {
+    font-size: 11px;
+    color: #888;
+    margin: -10px 0 20px 0;
+}
+.checkbox-group {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 16px;
+    font-size: 13px;
+    color: #444;
+    line-height: 1.4;
+}
+.checkbox-group input[type="checkbox"] {
+    margin-top: 2px;
+    accent-color: #111;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+/* --- Buttons --- */
+.form-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-top: 30px;
+}
+.btn-signup {
+    background-color: #c4c4c4;
+    color: #fff;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 30px;
+    font-weight: 500;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.btn-signup:hover { background-color: #111; }
+.login-link { font-size: 13px; color: #555; margin: 0; }
+.login-link span { color: #111; font-weight: 600; cursor: pointer; text-decoration: underline; }
+
+/* Responsive Wrap */
+@media (max-width: 900px) {
+    .auth-main { flex-direction: column; padding: 20px; overflow-y: auto; }
+    .auth-left { padding-left: 0; text-align: center; align-items: center; }
+    .form-row { flex-direction: column; gap: 0; }
+    .split-auth-body { overflow-y: auto; }
+}
+
+/* =========================================================
+   NTA/JEE EXACT REPLICA CBT UI
+   ========================================================= */
+
+.jee-body {
+    margin: 0; padding: 0;
+    font-family: 'Inter', sans-serif;
+    background-color: #f4f5f8;
+    height: 100vh;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+}
+
+/* --- Header --- */
+.jee-header {
+    background: #fff;
+    height: 70px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 20px;
+    border-bottom: 2px solid #e5e7eb;
+}
+.jee-title { font-size: 18px; font-weight: 700; color: #1f2937; max-width: 35%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.jee-header-right { display: flex; align-items: center; gap: 20px; }
+
+.jee-action-btn { display: flex; flex-direction: column; align-items: center; cursor: pointer; color: #2563eb; font-size: 12px; font-weight: 500; text-align: center; }
+.jee-action-btn svg { width: 20px; height: 20px; stroke: #2563eb; stroke-width: 2; fill: none; margin-bottom: 4px; }
+.jee-action-btn small { font-size: 9px; color: #6b7280; font-weight: 400; }
+
+.jee-timer-box { text-align: center; margin: 0 10px; }
+.timer-label { font-size: 11px; color: #4b5563; margin-bottom: 3px; }
+.timer-pill { background: #ef4444; color: #fff; padding: 4px 15px; border-radius: 12px; font-weight: 600; font-size: 14px; letter-spacing: 1px; }
+
+.jee-profile { text-align: right; padding-left: 15px; border-left: 1px solid #e5e7eb; }
+.jee-profile .p-name { font-size: 14px; font-weight: 700; color: #111; }
+.jee-profile .p-id { font-size: 11px; color: #6b7280; }
+
+/* --- Layout --- */
+.jee-main-layout { display: flex; flex: 1; height: calc(100vh - 70px); overflow: hidden; }
+.jee-left-panel { flex: 1; display: flex; flex-direction: column; background: #fff; border-right: 1px solid #e5e7eb; }
+.jee-right-panel { width: 320px; background: #fff; display: flex; flex-direction: column; overflow-y: auto; }
+
+/* --- Sections Bar --- */
+.jee-sections-wrapper { display: flex; align-items: center; border-bottom: 1px solid #e5e7eb; padding: 5px 10px; background: #f9fafb; }
+.sec-arrow { padding: 5px 15px; color: #9ca3af; cursor: pointer; }
+.jee-sections { display: flex; gap: 5px; overflow-x: auto; flex: 1; scrollbar-width: none; }
+.jee-sections::-webkit-scrollbar { display: none; }
+.sec-tab { padding: 8px 16px; font-size: 13px; font-weight: 600; color: #4b5563; border: 1px solid #e5e7eb; background: #fff; cursor: pointer; border-radius: 4px; white-space: nowrap; }
+.sec-tab.active { background: #2563eb; color: #fff; border-color: #2563eb; }
+
+/* --- Question Area --- */
+.jee-question-area { flex: 1; padding: 20px 30px; overflow-y: auto; }
+.q-meta-header { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
+.q-number { font-size: 20px; font-weight: 600; color: #1f2937; }
+.q-type-badge { background: #dbeafe; color: #1d4ed8; font-size: 12px; font-weight: 500; padding: 4px 10px; border-radius: 4px; }
+.q-divider { height: 1px; background: #e5e7eb; margin-bottom: 20px; }
+
+.q-content-box { margin-bottom: 30px; }
+.q-text { font-size: 15px; color: #374151; line-height: 1.6; }
+
+.jee-opt-row { display: flex; align-items: center; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px 20px; margin-bottom: 12px; cursor: pointer; transition: 0.2s; background: #fff; font-size: 15px; color: #374151; }
+.jee-opt-row:hover { background: #f9fafb; border-color: #d1d5db; }
+.jee-opt-row input[type="radio"] { margin-right: 15px; transform: scale(1.3); accent-color: #2563eb; }
+
+/* --- Footer Actions --- */
+.jee-footer { background: #fff; border-top: 1px solid #e5e7eb; padding: 15px 30px; display: flex; flex-direction: column; gap: 15px; }
+.footer-row-top { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f3f4f6; padding-bottom: 15px; }
+.footer-row-bottom { display: flex; justify-content: space-between; align-items: center; }
+
+.btn-save-next { background: #01c55d; color: #fff; border: none; padding: 10px 20px; border-radius: 4px; font-weight: 600; font-size: 13px; cursor: pointer; }
+.btn-save-mark { background: #5a4b81; color: #fff; border: none; padding: 10px 20px; border-radius: 4px; font-weight: 600; font-size: 13px; cursor: pointer; }
+.btn-clear { background: #fff; color: #2563eb; border: 1px solid #2563eb; padding: 10px 20px; border-radius: 4px; font-weight: 600; font-size: 13px; cursor: pointer; }
+.btn-nav { background: #fff; color: #2563eb; border: 1px solid #2563eb; padding: 8px 16px; border-radius: 4px; font-weight: 600; font-size: 13px; cursor: pointer; }
+.btn-submit { background: #01c55d; color: #fff; border: none; padding: 8px 25px; border-radius: 4px; font-weight: 600; font-size: 13px; cursor: pointer; }
+
+/* --- Right Palette --- */
+.palette-header { background: #f9fafb; padding: 10px 15px; font-size: 12px; font-weight: 600; color: #4b5563; letter-spacing: 0.5px; border-top: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb; }
+.palette-legend-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 15px; font-size: 12px; color: #4b5563; }
+.leg-item { display: flex; align-items: center; gap: 8px; }
+
+.badge { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 600; font-size: 13px; border-radius: 6px; cursor: pointer; }
+.badge-nv { background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; }
+.badge-na { background: #eb5545; }
+.badge-ans { background: #01c55d; }
+.badge-mr { background: #5a4b81; border-radius: 50%; }
+.badge-amr { background: #5a4b81; border-radius: 50%; position: relative; }
+.badge-amr::after { content: '✔'; position: absolute; bottom: -2px; right: -2px; background: #01c55d; color: #fff; font-size: 9px; width: 12px; height: 12px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
+
+.jee-q-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; padding: 15px; }
+
+/* Instructions Modal */
+.jee-modal { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); z-index: 1000; display: flex; align-items: center; justify-content: center; }
+.jee-modal.hidden { display: none; }
+.jee-modal-content { background: #fff; width: 80%; max-width: 800px; max-height: 80vh; padding: 30px; border-radius: 8px; overflow-y: auto; }
+.instruction-text { font-size: 14px; line-height: 1.6; color: #333; margin-top: 20px; }

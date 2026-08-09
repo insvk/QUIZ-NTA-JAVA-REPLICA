@@ -5,93 +5,128 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Test Engine</title>
     <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
-<body class="exam-body-bg">
+<body class="jee-body">
+
     <!-- TOP HEADER -->
-    <header class="exam-header">
-        <div class="exam-title-area">
-            <h2 id="examMainTitle">Loading Exam...</h2>
-        </div>
-        <div class="exam-meta">
-            <div class="timer-box">Time Left: <span id="timeRemaining">00:00:00</span></div>
-            <div class="user-badge" id="studentBadge">Student</div>
+    <header class="jee-header">
+        <div class="jee-title" id="examMainTitle">Loading Exam...</div>
+        
+        <div class="jee-header-right">
+            <div class="jee-action-btn">
+                <svg viewBox="0 0 24 24"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.92-10.42l5.07 5.07"/></svg>
+                <span>Sync<br><small>Last Sync : Just now</small></span>
+            </div>
+            <div class="jee-action-btn" onclick="toggleInstructions()">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                <span>Instructions</span>
+            </div>
+            <div class="jee-action-btn">
+                <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                <span>Question Paper</span>
+            </div>
+            
+            <div class="jee-timer-box">
+                <div class="timer-label">Time remaining</div>
+                <div class="timer-pill" id="timeRemaining">00:00:00</div>
+            </div>
+            
+            <div class="jee-profile">
+                <div id="studentBadgeName" class="p-name">STUDENT</div>
+                <div id="studentBadgeId" class="p-id">0000000</div>
+            </div>
         </div>
     </header>
 
-    <!-- INSTRUCTIONS SCREEN -->
-    <div id="instructionsScreen" class="exam-container" style="display: none;">
-        <h2 style="text-align: center; margin-bottom: 20px;">General Instructions</h2>
-        <div id="instructionContent" class="instruction-content"></div>
-        
-        <div class="terms-box">
-            <input type="checkbox" id="agreeCheck">
-            <label for="agreeCheck">I have read and understood the instructions. I agree that I will not use unfair means.</label>
-        </div>
-        <div style="text-align: center; margin-top: 20px;">
-            <button id="proceedBtn" class="btn-primary" disabled onclick="startExamTimer()">PROCEED</button>
+    <!-- INSTRUCTIONS MODAL (Hidden by default) -->
+    <div id="instructionsModal" class="jee-modal hidden">
+        <div class="jee-modal-content">
+            <h2>Exam Instructions</h2>
+            <div id="instructionContent" class="instruction-text"></div>
+            <button class="btn-submit" onclick="toggleInstructions()" style="margin-top: 20px;">Close & Return to Exam</button>
         </div>
     </div>
 
-    <!-- MAIN EXAM SCREEN -->
-    <div id="examScreen" class="exam-layout" style="display: none;">
-        <!-- Sections Bar -->
-        <div class="sections-bar" id="sectionsBar"></div>
+    <!-- MAIN CBT LAYOUT -->
+    <div class="jee-main-layout">
+        
+        <!-- LEFT PANEL (Questions) -->
+        <div class="jee-left-panel">
+            
+            <!-- Sections Bar -->
+            <div class="jee-sections-wrapper">
+                <span class="sec-arrow">❮</span>
+                <div class="jee-sections" id="sectionsBar"></div>
+                <span class="sec-arrow">❯</span>
+            </div>
 
-        <div class="exam-main-area">
-            <!-- Left Panel: Question & Options -->
-            <div class="question-panel">
-                <div class="q-header">
-                    <span id="qNumberDisplay" class="q-num">Question 1</span>
-                    <span class="q-type">Single Select Type</span>
+            <!-- Question Area -->
+            <div class="jee-question-area">
+                <div class="q-meta-header">
+                    <span class="q-number" id="qNumberDisplay">Question 1</span>
+                    <span class="q-type-badge">Single Select Type</span>
                 </div>
                 
-                <div id="questionText" class="q-text"></div>
-                <div id="questionImageContainer"></div>
+                <div class="q-divider"></div>
                 
-                <div class="options-container">
-                    <label class="opt-row"><input type="radio" name="examOpt" value="A"> <span id="optAText"></span></label>
-                    <label class="opt-row"><input type="radio" name="examOpt" value="B"> <span id="optBText"></span></label>
-                    <label class="opt-row"><input type="radio" name="examOpt" value="C"> <span id="optCText"></span></label>
-                    <label class="opt-row"><input type="radio" name="examOpt" value="D"> <span id="optDText"></span></label>
+                <div class="q-content-box">
+                    <div id="questionText" class="q-text"></div>
+                    <div id="questionImageContainer"></div>
                 </div>
-
-                <!-- Bottom Action Buttons -->
-                <div class="action-buttons">
-                    <button class="btn-save-next" onclick="saveAndNext()">SAVE & NEXT</button>
-                    <button class="btn-mark-review" onclick="saveAndMark()">SAVE & MARK FOR REVIEW</button>
-                    <button class="btn-clear" onclick="clearResponse()">CLEAR RESPONSE</button>
-                    <div class="nav-buttons">
-                        <button class="btn-nav" onclick="prevQuestion()">&larr; BACK</button>
-                        <button class="btn-nav" onclick="nextQuestion()">NEXT &rarr;</button>
-                        <button class="btn-submit" onclick="submitExamFinal()">SUBMIT</button>
-                    </div>
+                
+                <div class="q-options-box">
+                    <label class="jee-opt-row"><input type="radio" name="examOpt" value="A"> <span id="optAText"></span></label>
+                    <label class="jee-opt-row"><input type="radio" name="examOpt" value="B"> <span id="optBText"></span></label>
+                    <label class="jee-opt-row"><input type="radio" name="examOpt" value="C"> <span id="optCText"></span></label>
+                    <label class="jee-opt-row"><input type="radio" name="examOpt" value="D"> <span id="optDText"></span></label>
                 </div>
             </div>
 
-            <!-- Right Panel: Question Palette -->
-            <div class="palette-panel">
-                <div class="palette-legend">
-                    <div class="legend-item"><div class="badge badge-nv" id="count-nv">0</div> Not Visited</div>
-                    <div class="legend-item"><div class="badge badge-na" id="count-na">0</div> Not Answered</div>
-                    <div class="legend-item"><div class="badge badge-ans" id="count-ans">0</div> Answered</div>
-                    <div class="legend-item"><div class="badge badge-mr" id="count-mr">0</div> Marked for Review</div>
-                    <div class="legend-item"><div class="badge badge-amr" id="count-amr">0</div> Answered & Marked</div>
+            <!-- Footer Action Buttons -->
+            <div class="jee-footer">
+                <div class="footer-row-top">
+                    <div style="display:flex; gap:10px;">
+                        <button class="btn-save-next" onclick="saveAndNext()">SAVE & NEXT</button>
+                        <button class="btn-save-mark" onclick="saveAndMark()">SAVE & MARK FOR REVIEW</button>
+                    </div>
+                    <button class="btn-clear" onclick="clearResponse()">CLEAR RESPONSE</button>
                 </div>
-                
-                <h4 style="margin: 15px 0 5px 0; background: #e9ecef; padding: 5px;">CHOOSE A QUESTION</h4>
-                <div class="q-grid" id="questionGrid"></div>
+                <div class="footer-row-bottom">
+                    <div style="display:flex; gap:10px;">
+                        <button class="btn-nav" onclick="prevQuestion()">&#8592; BACK</button>
+                        <button class="btn-nav" onclick="nextQuestion()">NEXT &#8594;</button>
+                    </div>
+                    <button class="btn-submit" onclick="submitExamFinal()">SUBMIT</button>
+                </div>
             </div>
         </div>
+
+        <!-- RIGHT PANEL (Palette) -->
+        <div class="jee-right-panel">
+            <div class="palette-header">QUESTION STATUS</div>
+            
+            <div class="palette-legend-grid">
+                <div class="leg-item"><div class="badge badge-nv" id="count-nv">0</div> Not Visited</div>
+                <div class="leg-item"><div class="badge badge-na" id="count-na">0</div> Not Answered</div>
+                <div class="leg-item"><div class="badge badge-ans" id="count-ans">0</div> Answered</div>
+                <div class="leg-item"><div class="badge badge-mr" id="count-mr">0</div> Marked for Review</div>
+                <div class="leg-item" style="grid-column: span 2;"><div class="badge badge-amr" id="count-amr">0</div> Answered & Marked for Review</div>
+            </div>
+
+            <div class="palette-header" style="margin-top: 15px;">CHOOSE A QUESTION</div>
+            <div class="jee-q-grid" id="questionGrid"></div>
+        </div>
+
     </div>
 
     <script src="app.js"></script>
     <script>
-        // Initialize on load
         window.onload = () => {
-            document.getElementById('studentBadge').innerText = localStorage.getItem('userId');
-            document.getElementById('agreeCheck').addEventListener('change', (e) => {
-                document.getElementById('proceedBtn').disabled = !e.target.checked;
-            });
+            const name = localStorage.getItem('name') || localStorage.getItem('userId') || 'STUDENT';
+            const regNo = localStorage.getItem('regNo') || 'N/A';
+            document.getElementById('studentBadgeName').innerText = name.toUpperCase();
+            document.getElementById('studentBadgeId').innerText = regNo;
             loadExamEngine();
         }
     </script>
