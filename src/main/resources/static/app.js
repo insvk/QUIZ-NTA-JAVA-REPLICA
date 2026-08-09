@@ -1,5 +1,8 @@
 const API_URL = window.location.origin.includes('localhost') ? 'https://kvnjg-java-quiz-nw.onrender.com' : '/api';
 
+// ==========================================
+// 1. STRICT ROUTING & AUTHENTICATION
+// ==========================================
 window.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
     const sharedTestId = urlParams.get('testId');
@@ -7,24 +10,34 @@ window.addEventListener('DOMContentLoaded', () => {
 
     const path = window.location.pathname;
     const role = localStorage.getItem('role');
+    const isIndex = path.includes('index.html') || path.endsWith('/');
 
-    if (path.includes('index.html') || path === '/') {
-        if (role === 'ADMIN') window.location.href = 'admin.html';
-        else if (role === 'STUDENT') redirectStudent();
+    // Security Lock & Routing
+    if (isIndex) {
+        if (role === 'ADMIN') return window.location.replace('admin.html');
+        if (role === 'STUDENT') return window.location.replace('student.html');
     } else if (path.includes('admin.html')) {
-        if (role !== 'ADMIN') return window.location.href = 'index.html';
-        initAdminDashboard(); // Initializes the Spik Dashboard & Graph
+        if (role !== 'ADMIN') {
+            localStorage.clear();
+            return window.location.replace('index.html');
+        }
+        initAdminDashboard(); 
     } else if (path.includes('student.html')) {
-        if (role !== 'STUDENT') return window.location.href = 'index.html';
+        if (role !== 'STUDENT') {
+            localStorage.clear();
+            return window.location.replace('index.html');
+        }
+        loadStudentPortal();
+        loadStudentAttempts();
     } else if (path.includes('quiz.html')) {
-        if (!role) return window.location.href = 'index.html';
+        if (!role) {
+            localStorage.clear();
+            return window.location.replace('index.html');
+        }
         loadExamEngine();
     }
 });
 
-// ==========================================
-// 1. AUTHENTICATION & REGISTRATION
-// ==========================================
 function toggleAuth() {
     document.getElementById('loginBox')?.classList.toggle('hidden');
     document.getElementById('regBox')?.classList.toggle('hidden');
@@ -49,7 +62,7 @@ async function login() {
             localStorage.setItem('role', data.role);
             localStorage.setItem('userId', data.userId);
             if (data.role === 'ADMIN') {
-                window.location.href = 'admin.html';
+                window.location.replace('admin.html');
             } else {
                 localStorage.setItem('studentId', data.studentId);
                 localStorage.setItem('regNo', data.regNo || '');
@@ -69,8 +82,8 @@ function redirectStudent() {
     if (pendingTest) {
         sessionStorage.removeItem('pendingTestId');
         localStorage.setItem('currentTestId', pendingTest);
-        window.location.href = 'quiz.html';
-    } else { window.location.href = 'student.html'; }
+        window.location.replace('quiz.html');
+    } else { window.location.replace('student.html'); }
 }
 
 async function register() {
@@ -107,48 +120,42 @@ async function register() {
     } catch (err) { alert("Network Error: Registration failed."); }
 }
 
-function logout() { localStorage.clear(); sessionStorage.clear(); window.location.href = 'index.html'; }
+function logout() { localStorage.clear(); sessionStorage.clear(); window.location.replace('index.html'); }
 
 // ==========================================
-// 2. ADMIN DASHBOARD (SPIK THEME & CHARTS)
+// 2. SHARED SPIK THEME SIDEBAR LOGIC
 // ==========================================
 function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
 
-function switchAdminView(viewId, element) {
+function switchView(viewId, element) {
     document.querySelectorAll('.admin-view').forEach(v => v.classList.remove('active'));
     document.getElementById(viewId).classList.add('active');
-    
     if(element) {
         document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
         element.classList.add('active');
     }
-    if(viewId === 'view-dashboard') initAdminDashboard();
+    // Refresh admin dash if applicable
+    if(viewId === 'view-dashboard' && localStorage.getItem('role') === 'ADMIN') initAdminDashboard();
 }
 
+// ==========================================
+// 3. ADMIN DASHBOARD LOGIC (Unchanged Spik Logic)
+// ==========================================
 let dashChart = null;
-
 async function initAdminDashboard() {
     try {
         const [testRes, attRes, logRes] = await Promise.all([
-            fetch(`${API_URL}/admin/tests`),
-            fetch(`${API_URL}/admin/attempts`),
-            fetch(`${API_URL}/admin/logs`)
+            fetch(`${API_URL}/admin/tests`), fetch(`${API_URL}/admin/attempts`), fetch(`${API_URL}/admin/logs`)
         ]);
+        const tests = await testRes.json(); const attempts = await attRes.json(); const logs = await logRes.json();
 
-        const tests = await testRes.json();
-        const attempts = await attRes.json();
-        const logs = await logRes.json();
-
-        const now = new Date();
-        let liveCount = 0, upcomingCount = 0;
-        
+        const now = new Date(); let liveCount = 0, upcomingCount = 0;
         tests.forEach(t => {
             if(t.active) {
                 if(!t.scheduledTime || new Date(t.scheduledTime) <= now) liveCount++;
                 else upcomingCount++;
             }
         });
-
         document.getElementById('statLiveTests').innerText = liveCount;
         document.getElementById('statUpcomingTests').innerText = upcomingCount;
         document.getElementById('statFinishedTests').innerText = attempts.length;
@@ -165,11 +172,7 @@ async function initAdminDashboard() {
         const logTable = document.getElementById('dashLogsTable').getElementsByTagName('tbody')[0];
         logTable.innerHTML = '';
         logs.slice().reverse().slice(0, 5).forEach(l => {
-            logTable.innerHTML += `<tr>
-                <td style="font-size:12px; color:#888;">${new Date(l.timestamp).toLocaleString()}</td>
-                <td><strong>${l.username}</strong></td>
-                <td>${l.action}</td>
-            </tr>`;
+            logTable.innerHTML += `<tr><td style="font-size:12px; color:#888;">${new Date(l.timestamp).toLocaleString()}</td><td><strong>${l.username}</strong></td><td>${l.action}</td></tr>`;
         });
 
         const testScores = {};
@@ -186,27 +189,17 @@ async function initAdminDashboard() {
         });
 
         if(dashChart) dashChart.destroy();
-        const ctx = document.getElementById('performanceChart').getContext('2d');
-        dashChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: labels.length ? labels : ['No Data'],
-                datasets: [{
-                    label: 'Avg Score',
-                    data: data.length ? data : [0],
-                    borderColor: '#6f42c1',
-                    backgroundColor: 'rgba(111, 66, 193, 0.1)',
-                    borderWidth: 2,
-                    fill: true,
-                    tension: 0.4
-                }]
-            },
-            options: { responsive: true, maintainAspectRatio: false }
-        });
-    } catch (e) { console.log("Dash init error:", e); }
+        const ctx = document.getElementById('performanceChart')?.getContext('2d');
+        if(ctx) {
+            dashChart = new Chart(ctx, {
+                type: 'line',
+                data: { labels: labels.length ? labels : ['No Data'], datasets: [{ label: 'Avg Score', data: data.length ? data : [0], borderColor: '#6f42c1', backgroundColor: 'rgba(111, 66, 193, 0.1)', borderWidth: 2, fill: true, tension: 0.4 }] },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+    } catch (e) {}
 }
 
-// --- ADMIN USER CRUD ---
 async function loadUsers() {
     const res = await fetch(`${API_URL}/admin/users`);
     if (res.ok) {
@@ -214,7 +207,6 @@ async function loadUsers() {
         const container = document.getElementById('usersTableContainer');
         if (!container) return;
         if (users.length === 0) return container.innerHTML = `<p>No student accounts found.</p>`;
-        
         let html = `<table class="clean-table"><thead><tr><th>Reg No</th><th>Name</th><th>Username</th><th>Action</th></tr></thead><tbody>`;
         users.forEach(u => {
             html += `<tr><td>${u.regNo || 'N/A'}</td><td>${u.name || 'N/A'}</td><td><strong>${u.userId}</strong></td>
@@ -229,11 +221,7 @@ async function adminCreateUser() {
     const name = document.getElementById('adminNewStudentName').value.trim();
     const pwd = document.getElementById('adminNewStudentPwd').value.trim();
     if (!uid || !pwd || !name) return alert("Fill all fields.");
-    const res = await fetch(`${API_URL}/admin/users/create`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: uid, name: name, password: pwd })
-    });
+    const res = await fetch(`${API_URL}/admin/users/create`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: uid, name: name, password: pwd }) });
     if (res.ok) { alert(`Account Created!`); loadUsers(); } else { alert(await res.text()); }
 }
 
@@ -243,7 +231,6 @@ async function deleteUser(id, userId) {
     if (res.ok) loadUsers(); else alert(await res.text());
 }
 
-// --- ADMIN TEST CRUD ---
 let questionCount = 0;
 function addQuestionField() {
     questionCount++;
@@ -327,102 +314,120 @@ async function toggleTest(id) { await fetch(`${API_URL}/admin/test/toggle/${id}`
 async function deleteAdminTest(id) { if(!confirm("Permanently delete this test?")) return; await fetch(`${API_URL}/admin/test/${id}`, { method: 'DELETE' }); loadAdminTests(); }
 
 async function loadAttempts() {
-    try {
-        const res = await fetch(`${API_URL}/admin/attempts`);
-        if (!res.ok) return;
-        const attempts = await res.json();
-        const table = document.getElementById('attemptsTable');
-        if (!table) return;
-        let html = `<table class="clean-table"><thead><tr><th>ID</th><th>Student</th><th>Test</th><th>Score</th><th>Correct</th><th>Wrong</th><th>Total</th></tr></thead><tbody>`;
-        attempts.forEach(a => html += `<tr><td>${a.id}</td><td><strong>${a.studentUserId || a.studentId}</strong></td><td>${a.testTitle}</td><td><strong style="color:#6f42c1">${a.score}</strong></td><td>${a.correctAnswers}</td><td>${a.wrongAnswers}</td><td>${a.totalQuestions}</td></tr>`);
-        table.innerHTML = html + `</tbody></table>`;
-    } catch (err) {}
+    const res = await fetch(`${API_URL}/admin/attempts`);
+    if (!res.ok) return;
+    const attempts = await res.json();
+    const table = document.getElementById('attemptsTable');
+    if (!table) return;
+    let html = `<table class="clean-table"><thead><tr><th>ID</th><th>Student</th><th>Test</th><th>Score</th><th>Correct</th><th>Wrong</th><th>Total</th></tr></thead><tbody>`;
+    attempts.forEach(a => html += `<tr><td>${a.id}</td><td><strong>${a.studentUserId || a.studentId}</strong></td><td>${a.testTitle}</td><td><strong style="color:#6f42c1">${a.score}</strong></td><td>${a.correctAnswers}</td><td>${a.wrongAnswers}</td><td>${a.totalQuestions}</td></tr>`);
+    table.innerHTML = html + `</tbody></table>`;
 }
 function downloadXLS() { window.location.href = `${API_URL}/admin/export-excel`; }
 
 // ==========================================
-// 3. STUDENT PORTAL (NLEARN DASHBOARD)
+// 4. CLEAN SPIK STUDENT PORTAL
 // ==========================================
 async function loadStudentPortal() {
     const res = await fetch(`${API_URL}/student/tests`);
     if (!res.ok) return;
     const data = await res.json();
     
-    const liveContainer = document.getElementById('testList');
-    const upContainer = document.getElementById('upcomingTestList');
+    const liveContainer = document.getElementById('liveTestsContainer');
+    const upContainer = document.getElementById('upcomingTestsContainer');
     if(!liveContainer || !upContainer) return;
 
-    liveContainer.innerHTML = data.available.length === 0 ? '<p>No live tests available.</p>' : '';
-    upContainer.innerHTML = data.upcoming.length === 0 ? '<p>No upcoming tests scheduled.</p>' : '';
+    liveContainer.innerHTML = data.available.length === 0 ? '<p style="color:#888;">No live tests currently available.</p>' : '';
+    upContainer.innerHTML = data.upcoming.length === 0 ? '<p style="color:#888;">No upcoming tests scheduled.</p>' : '';
 
-    const gradients = ['linear-gradient(135deg, #fff3e0, #ffe0b2)', 'linear-gradient(135deg, #f3e5f5, #e1bee7)', 'linear-gradient(135deg, #e3f2fd, #bbdefb)'];
-
-    data.available.forEach((t, i) => {
+    data.available.forEach(t => {
         liveContainer.innerHTML += `
-            <div class="flash-card" style="background: ${gradients[i % gradients.length]};" onclick="startQuiz(${t.id})">
-                <h4>${t.title}</h4>
-                <p style="font-size: 12px; margin-top: 10px; opacity: 0.8;">Duration: ${t.durationMinutes || 180} mins</p>
-                <div style="margin-top: 15px;"><span style="background: rgba(255,255,255,0.5); padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;">Attempt Now &#8594;</span></div>
+            <div class="stat-card purple-card" style="cursor:pointer; display:flex; flex-direction:column; align-items:flex-start;" onclick="startQuiz(${t.id})">
+                <div class="stat-info">
+                    <h3 style="color:#6f42c1;">LIVE NOW</h3>
+                    <h2 style="font-size:18px; margin:5px 0;">${t.title}</h2>
+                    <p>Duration: ${t.durationMinutes || 180} mins | ${t.negativeMarkingEnabled ? 'Neg Marking: -1' : 'No Neg Marking'}</p>
+                </div>
+                <button class="btn-primary-spik" style="margin-top:15px; width:100%;">Attempt Exam →</button>
             </div>`;
     });
 
-    data.upcoming.forEach((t) => {
+    data.upcoming.forEach(t => {
         const dateStr = new Date(t.scheduledTime).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
         upContainer.innerHTML += `
-            <div class="flash-card upcoming-card" style="background: #e9ecef;">
-                <h4>${t.title}</h4>
-                <p style="font-size:12px; color:#666; margin-top:10px;">Opens: <strong>${dateStr} (IST)</strong></p>
+            <div class="stat-card" style="background:#eaedf1; display:flex; flex-direction:column; align-items:flex-start;">
+                <div class="stat-info">
+                    <h3 style="color:#555;">UPCOMING</h3>
+                    <h2 style="font-size:18px; margin:5px 0; color:#555;">${t.title}</h2>
+                    <p style="color:#555;">Opens: <strong>${dateStr} (IST)</strong></p>
+                </div>
             </div>`;
     });
 }
+
+async function loadStudentAttempts() {
+    const studentId = localStorage.getItem('studentId');
+    const res = await fetch(`${API_URL}/student/attempts/${studentId}`);
+    if (!res.ok) return;
+    const attempts = await res.json();
+    const table = document.getElementById('studentAttemptsTable');
+    if (!table) return;
+
+    if (attempts.length === 0) {
+        table.innerHTML = '<p>You have not completed any exams yet.</p>';
+        return;
+    }
+
+    let html = `<table class="clean-table"><thead><tr><th>Test Title</th><th>Score</th><th>Correct</th><th>Wrong</th><th>Date</th></tr></thead><tbody>`;
+    attempts.forEach(a => {
+        html += `<tr>
+            <td><strong>${a.testTitle}</strong></td>
+            <td><strong style="color:#10b981;">${a.score}</strong></td>
+            <td>${a.correctAnswers}</td>
+            <td>${a.wrongAnswers}</td>
+            <td style="font-size:12px;">${new Date(a.attemptTime).toLocaleDateString()}</td>
+        </tr>`;
+    });
+    table.innerHTML = html + `</tbody></table>`;
+}
+
 function startQuiz(testId) { localStorage.setItem('currentTestId', testId); window.location.href = 'quiz.html'; }
 
 // ==========================================
-// 4. EXAM ENGINE LOGIC (NTA/JEE REPLICA)
+// 5. EXAM ENGINE LOGIC (NTA/JEE REPLICA)
 // ==========================================
 let examData = null, currentQIndex = 0, examTimer = null, remainingSeconds = 0, qStates = [], qAnswers = [];
 
 async function loadExamEngine() {
     const testId = localStorage.getItem('currentTestId');
     const res = await fetch(`${API_URL}/student/test/${testId}`);
-    if (!res.ok) { alert("Exam unavailable."); return window.location.href = 'student.html'; }
+    if (!res.ok) { alert("Exam unavailable."); return window.location.replace('student.html'); }
     
     examData = await res.json();
     document.getElementById('examMainTitle').innerText = examData.title;
     document.getElementById('instructionContent').innerHTML = examData.instructions || "<p>No specific instructions provided.</p>";
     
-    qStates = new Array(examData.questions.length).fill(0); // 0 = Not Visited
+    qStates = new Array(examData.questions.length).fill(0);
     qAnswers = new Array(examData.questions.length).fill(null);
-    
     startExamTimer();
 }
 
 function startExamTimer() {
     remainingSeconds = (examData.durationMinutes || 180) * 60;
-    
     examTimer = setInterval(() => {
-        if(remainingSeconds <= 0) { 
-            clearInterval(examTimer); 
-            alert("Time is up! Auto-submitting..."); 
-            submitExamFinal(); 
-            return; 
-        }
+        if(remainingSeconds <= 0) { clearInterval(examTimer); alert("Time is up! Auto-submitting..."); submitExamFinal(); return; }
         remainingSeconds--;
         const h = Math.floor(remainingSeconds / 3600).toString().padStart(2, '0');
         const m = Math.floor((remainingSeconds % 3600) / 60).toString().padStart(2, '0');
         const s = (remainingSeconds % 60).toString().padStart(2, '0');
         document.getElementById('timeRemaining').innerText = `${h}:${m}:${s}`;
     }, 1000);
-    
-    buildSections(); 
-    loadQuestion(0);
+    buildSections(); loadQuestion(0);
 }
 
 function buildSections() {
     const sections = [...new Set(examData.questions.map(q => q.sectionName || 'GENERAL'))];
-    document.getElementById('sectionsBar').innerHTML = sections.map((s, idx) => 
-        `<div class="sec-tab ${idx===0?'active':''}" onclick="jumpToSection('${s}', this)">${s}</div>`
-    ).join('');
+    document.getElementById('sectionsBar').innerHTML = sections.map((s, idx) => `<div class="sec-tab ${idx===0?'active':''}" onclick="jumpToSection('${s}', this)">${s}</div>`).join('');
 }
 
 function jumpToSection(secName, element) {
@@ -434,123 +439,49 @@ function jumpToSection(secName, element) {
 
 function loadQuestion(index) {
     if (index < 0 || index >= examData.questions.length) return;
-    currentQIndex = index;
-    const q = examData.questions[index];
-    
+    currentQIndex = index; const q = examData.questions[index];
     if (qStates[index] === 0) qStates[index] = 1;
 
     document.getElementById('qNumberDisplay').innerText = `Question ${index + 1}`;
     document.getElementById('questionText').innerHTML = q.questionText;
     document.getElementById('questionImageContainer').innerHTML = q.imageBase64 ? `<img src="${q.imageBase64}" style="max-width:100%; border-radius:8px; margin-top:15px; display:block;">` : '';
-    
     ['A','B','C','D'].forEach(l => document.getElementById(`opt${l}Text`).innerText = q[`option${l}`]);
-    
-    document.querySelectorAll('input[name="examOpt"]').forEach(rb => { 
-        rb.checked = (rb.value === qAnswers[index]); 
-    });
+    document.querySelectorAll('input[name="examOpt"]').forEach(rb => { rb.checked = (rb.value === qAnswers[index]); });
 
     const activeSec = q.sectionName || 'GENERAL';
-    document.querySelectorAll('.sec-tab').forEach(t => { 
-        t.classList.toggle('active', t.innerText === activeSec); 
-    });
-    
+    document.querySelectorAll('.sec-tab').forEach(t => { t.classList.toggle('active', t.innerText === activeSec); });
     updatePalette();
 }
 
 function updatePalette() {
-    const grid = document.getElementById('questionGrid'); 
-    grid.innerHTML = '';
-    
+    const grid = document.getElementById('questionGrid'); grid.innerHTML = '';
     let counts = {nv:0, na:0, ans:0, mr:0, amr:0};
-    
     qStates.forEach((s, idx) => {
         let cls = 'badge-nv';
-        if (s===1) { cls='badge-na'; counts.na++; } 
-        else if (s===2) { cls='badge-ans'; counts.ans++; } 
-        else if (s===3) { cls='badge-mr'; counts.mr++; } 
-        else if (s===4) { cls='badge-amr'; counts.amr++; } 
-        else counts.nv++;
-        
+        if (s===1) { cls='badge-na'; counts.na++; } else if (s===2) { cls='badge-ans'; counts.ans++; } else if (s===3) { cls='badge-mr'; counts.mr++; } else if (s===4) { cls='badge-amr'; counts.amr++; } else counts.nv++;
         let styleStr = idx === currentQIndex ? 'box-shadow: 0 0 0 2px #000;' : '';
         grid.innerHTML += `<div class="badge ${cls}" style="${styleStr}" onclick="loadQuestion(${idx})">${idx + 1}</div>`;
     });
-    
     ['nv','na','ans','mr','amr'].forEach(k => document.getElementById(`count-${k}`).innerText = counts[k]);
 }
 
-function getCurrentSelection() { 
-    const sel = document.querySelector('input[name="examOpt"]:checked'); 
-    return sel ? sel.value : null; 
-}
-
-function saveAndNext() { 
-    const ans = getCurrentSelection(); 
-    if(ans){ 
-        qAnswers[currentQIndex] = ans; 
-        qStates[currentQIndex] = 2; // Answered
-    } else { 
-        qAnswers[currentQIndex] = null; 
-        qStates[currentQIndex] = 1; // Not Answered
-    } 
-    nextQuestion(); 
-}
-
-function saveAndMark() { 
-    const ans = getCurrentSelection(); 
-    if(ans){ 
-        qAnswers[currentQIndex] = ans; 
-        qStates[currentQIndex] = 4; // Answered & Marked
-    } else { 
-        qAnswers[currentQIndex] = null; 
-        qStates[currentQIndex] = 3; // Marked for Review
-    } 
-    nextQuestion(); 
-}
-
-function clearResponse() { 
-    document.querySelectorAll('input[name="examOpt"]').forEach(rb => rb.checked = false); 
-    qAnswers[currentQIndex] = null; 
-    qStates[currentQIndex] = 1; // Reverts to Not Answered
-    updatePalette(); 
-}
-
-function nextQuestion() { 
-    if (currentQIndex < examData.questions.length - 1) loadQuestion(currentQIndex + 1); 
-    else updatePalette(); 
-}
-
-function prevQuestion() { 
-    if (currentQIndex > 0) loadQuestion(currentQIndex - 1); 
-}
-
-function toggleInstructions() {
-    const modal = document.getElementById('instructionsModal');
-    modal.classList.toggle('hidden');
-}
+function getCurrentSelection() { const sel = document.querySelector('input[name="examOpt"]:checked'); return sel ? sel.value : null; }
+function saveAndNext() { const ans = getCurrentSelection(); if(ans){ qAnswers[currentQIndex] = ans; qStates[currentQIndex] = 2; } else { qAnswers[currentQIndex] = null; qStates[currentQIndex] = 1; } nextQuestion(); }
+function saveAndMark() { const ans = getCurrentSelection(); if(ans){ qAnswers[currentQIndex] = ans; qStates[currentQIndex] = 4; } else { qAnswers[currentQIndex] = null; qStates[currentQIndex] = 3; } nextQuestion(); }
+function clearResponse() { document.querySelectorAll('input[name="examOpt"]').forEach(rb => rb.checked = false); qAnswers[currentQIndex] = null; qStates[currentQIndex] = 1; updatePalette(); }
+function nextQuestion() { if (currentQIndex < examData.questions.length - 1) loadQuestion(currentQIndex + 1); else updatePalette(); }
+function prevQuestion() { if (currentQIndex > 0) loadQuestion(currentQIndex - 1); }
+function toggleInstructions() { document.getElementById('instructionsModal').classList.toggle('hidden'); }
 
 async function submitExamFinal() {
     if(!confirm("Are you sure you want to submit the exam?")) return;
     clearInterval(examTimer);
-    
     const answersMap = {};
-    examData.questions.forEach((q, idx) => { 
-        if(qAnswers[idx]) answersMap[q.id] = qAnswers[idx]; 
-    });
-    
-    const payload = { 
-        testId: examData.id, 
-        studentId: localStorage.getItem('studentId'), 
-        studentUserId: localStorage.getItem('userId'), 
-        answers: answersMap 
-    };
+    examData.questions.forEach((q, idx) => { if(qAnswers[idx]) answersMap[q.id] = qAnswers[idx]; });
+    const payload = { testId: examData.id, studentId: localStorage.getItem('studentId'), studentUserId: localStorage.getItem('userId'), answers: answersMap };
     
     try {
-        const res = await fetch(`${API_URL}/student/submit`, { 
-            method: 'POST', 
-            headers: { 'Content-Type': 'application/json' }, 
-            body: JSON.stringify(payload) 
-        });
-        
+        const res = await fetch(`${API_URL}/student/submit`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
         if (res.ok) {
             const result = await res.json();
             document.getElementById('examMainTitle').innerText = "Exam Completed";
@@ -560,7 +491,7 @@ async function submitExamFinal() {
                         <h1 style="color: #1f2937;">Exam Submitted Successfully!</h1>
                         <h2 style="color:#01c55d; font-size: 40px; margin: 20px 0;">Score: ${result.score}</h2>
                         <p style="font-size: 16px; color: #4b5563;">Correct: <strong>${result.correctAnswers}</strong> | Wrong: <strong>${result.wrongAnswers}</strong></p>
-                        <button onclick="window.location.href='student.html'" class="btn-save-next" style="margin-top:30px; font-size:16px; padding:12px 30px;">Return to Dashboard</button>
+                        <button onclick="window.location.replace('student.html')" class="btn-save-next" style="margin-top:30px; font-size:16px; padding:12px 30px;">Return to Dashboard</button>
                     </div>
                 </div>`;
         }
