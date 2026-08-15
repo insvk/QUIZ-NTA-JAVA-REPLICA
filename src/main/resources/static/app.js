@@ -291,6 +291,7 @@ async function loadAttempts() {
     attempts.forEach(a => html += `<tr><td>#${a.id}</td><td>${a.studentUserId || a.studentId}</td><td>${a.testTitle}</td><td><span class="badge bg-purple">${a.score}</span></td><td>${a.correctAnswers}</td><td>${a.wrongAnswers}</td><td>${a.totalQuestions}</td></tr>`);
     table.innerHTML = html + `</tbody></table>`;
 }
+
 // ==========================================
 // 4. STUDENT PORTAL LOGIC (DARK THEME)
 // ==========================================
@@ -327,6 +328,12 @@ async function loadStudentPortal() {
     });
 }
 
+// THIS IS THE NEW FUNCTION ADDED
+function startQuiz(testId) {
+    localStorage.setItem('currentTestId', testId);
+    window.location.href = 'quiz.html';
+}
+
 async function loadStudentAttempts() {
     const studentId = localStorage.getItem('studentId');
     const res = await fetch(`${API_URL}/student/attempts/${studentId}`);
@@ -352,6 +359,7 @@ async function loadStudentAttempts() {
     });
     table.innerHTML = html + `</tbody></table>`;
 }
+
 // ==========================================
 // 5. EXAM ENGINE LOGIC (NTA/JEE REPLICA)
 // ==========================================
