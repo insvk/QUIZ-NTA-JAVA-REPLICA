@@ -292,7 +292,7 @@ async function loadAttempts() {
     table.innerHTML = html + `</tbody></table>`;
 }
 // ==========================================
-// 4. STUDENT PORTAL LOGIC
+// 4. STUDENT PORTAL LOGIC (DARK THEME)
 // ==========================================
 async function loadStudentPortal() {
     const res = await fetch(`${API_URL}/student/tests`);
@@ -303,30 +303,26 @@ async function loadStudentPortal() {
     const upContainer = document.getElementById('upcomingTestsContainer');
     if(!liveContainer || !upContainer) return;
 
-    liveContainer.innerHTML = data.available.length === 0 ? '<p style="color:#888;">No live tests currently available.</p>' : '';
-    upContainer.innerHTML = data.upcoming.length === 0 ? '<p style="color:#888;">No upcoming tests scheduled.</p>' : '';
+    liveContainer.innerHTML = data.available.length === 0 ? '<p style="color:#a1a1aa; font-size:14px; grid-column: span 2;">No live tests currently available.</p>' : '';
+    upContainer.innerHTML = data.upcoming.length === 0 ? '<p style="color:#a1a1aa; font-size:14px; grid-column: span 2;">No upcoming tests scheduled.</p>' : '';
 
     data.available.forEach(t => {
         liveContainer.innerHTML += `
-            <div class="stat-card purple-card" style="cursor:pointer; display:flex; flex-direction:column; align-items:flex-start;" onclick="startQuiz(${t.id})">
-                <div class="stat-info">
-                    <h3 style="color:#6f42c1;">LIVE NOW</h3>
-                    <h2 style="font-size:18px; margin:5px 0;">${t.title}</h2>
-                    <p>Duration: ${t.durationMinutes || 180} mins | ${t.negativeMarkingEnabled ? 'Neg Marking: -1' : 'No Neg Marking'}</p>
-                </div>
-                <button class="btn-primary-spik" style="margin-top:15px; width:100%;">Attempt Exam →</button>
+            <div class="dark-panel" style="cursor:pointer; border-color:#10b981; display:flex; flex-direction:column; align-items:flex-start; margin-bottom:0;" onclick="startQuiz(${t.id})">
+                <span class="badge bg-green mb-20">LIVE NOW</span>
+                <h2 style="font-size:18px; margin:0 0 10px 0; color:#fff;">${t.title}</h2>
+                <p style="color:#a1a1aa; font-size:13px;">Duration: ${t.durationMinutes || 180} mins | ${t.negativeMarkingEnabled ? 'Neg Marking: -1' : 'No Neg Marking'}</p>
+                <button class="btn-pink" style="margin-top:20px; width:100%;">Attempt Exam →</button>
             </div>`;
     });
 
     data.upcoming.forEach(t => {
         const dateStr = new Date(t.scheduledTime).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
         upContainer.innerHTML += `
-            <div class="stat-card" style="background:#eaedf1; display:flex; flex-direction:column; align-items:flex-start;">
-                <div class="stat-info">
-                    <h3 style="color:#555;">UPCOMING</h3>
-                    <h2 style="font-size:18px; margin:5px 0; color:#555;">${t.title}</h2>
-                    <p style="color:#555;">Opens: <strong>${dateStr} (IST)</strong></p>
-                </div>
+            <div class="dark-panel" style="background:#1e1e24; display:flex; flex-direction:column; align-items:flex-start; margin-bottom:0; opacity:0.7;">
+                <span class="badge bg-purple mb-20">UPCOMING</span>
+                <h2 style="font-size:18px; margin:0 0 10px 0; color:#c9d1d9;">${t.title}</h2>
+                <p style="color:#a1a1aa; font-size:13px;">Opens: <strong style="color:#fff;">${dateStr} (IST)</strong></p>
             </div>`;
     });
 }
@@ -340,25 +336,22 @@ async function loadStudentAttempts() {
     if (!table) return;
 
     if (attempts.length === 0) {
-        table.innerHTML = '<p>You have not completed any exams yet.</p>';
+        table.innerHTML = '<p style="color:#a1a1aa;">You have not completed any exams yet.</p>';
         return;
     }
 
-    let html = `<table class="clean-table"><thead><tr><th>Test Title</th><th>Score</th><th>Correct</th><th>Wrong</th><th>Date</th></tr></thead><tbody>`;
+    let html = `<table class="dark-table"><thead><tr><th>Test Title</th><th>Score</th><th>Correct</th><th>Wrong</th><th>Date</th></tr></thead><tbody>`;
     attempts.forEach(a => {
         html += `<tr>
-            <td><strong>${a.testTitle}</strong></td>
-            <td><strong style="color:#10b981;">${a.score}</strong></td>
+            <td><strong style="color:#fff;">${a.testTitle}</strong></td>
+            <td><span class="badge bg-green">${a.score}</span></td>
             <td>${a.correctAnswers}</td>
             <td>${a.wrongAnswers}</td>
-            <td style="font-size:12px;">${new Date(a.attemptTime).toLocaleDateString()}</td>
+            <td style="font-size:12px; color:#a1a1aa;">${new Date(a.attemptTime).toLocaleDateString()}</td>
         </tr>`;
     });
     table.innerHTML = html + `</tbody></table>`;
 }
-
-function startQuiz(testId) { localStorage.setItem('currentTestId', testId); window.location.replace('quiz.html'); }
-
 // ==========================================
 // 5. EXAM ENGINE LOGIC (NTA/JEE REPLICA)
 // ==========================================
@@ -478,4 +471,56 @@ async function submitExamFinal() {
                 </div>`;
         }
     } catch (err) { alert("Failed to submit exam due to network error."); }
+}
+
+// ==========================================
+// 6. GOD MAXX STUDENT MANAGEMENT EXTENSIONS
+// ==========================================
+
+// ADMIN: Update Registration Sequence
+async function updateRegSequence() {
+    const prefix = document.getElementById('adminRegPrefix').value.trim();
+    const startNumber = document.getElementById('adminRegStart').value.trim();
+
+    if (!prefix || !startNumber) return alert("Please provide both Prefix and Starting Number.");
+
+    try {
+        const res = await fetch(`${API_URL}/admin/settings/reg-sequence`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prefix: prefix, startNumber: startNumber })
+        });
+        
+        if (res.ok) {
+            alert("Registration Sequence Updated Successfully! Next student will receive: " + prefix + startNumber);
+            document.getElementById('adminRegPrefix').value = '';
+            document.getElementById('adminRegStart').value = '';
+        } else {
+            alert("Failed to update sequence.");
+        }
+    } catch (err) { alert("Network Error: Could not reach server."); }
+}
+
+// STUDENT: Load Detailed Profile Data
+async function loadProfile() {
+    const studentId = localStorage.getItem('studentId');
+    if (!studentId) return;
+
+    try {
+        const res = await fetch(`${API_URL}/student/profile/${studentId}`);
+        if (res.ok) {
+            const data = await res.json();
+            
+            document.getElementById('profileDetailedName').innerText = data.name.toUpperCase();
+            document.getElementById('profileDetailedRegNo').innerText = "REG: " + data.regNo;
+            document.getElementById('profileDetailedEmail').innerText = data.email || "Not Provided";
+            document.getElementById('profileDetailedUserId').innerText = data.userId;
+            
+            if (data.profilePicBase64 && data.profilePicBase64.length > 50) {
+                document.getElementById('profileDetailedPic').src = data.profilePicBase64;
+                // Also update top nav just in case
+                document.getElementById('topNavProfilePic').src = data.profilePicBase64;
+            }
+        }
+    } catch (err) { console.log("Failed to load profile details."); }
 }

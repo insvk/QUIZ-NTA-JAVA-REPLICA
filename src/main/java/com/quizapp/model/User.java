@@ -18,6 +18,7 @@ public class User {
     private String regNo; // 7-digit unique ID
 
     private String name;
+    
     private String email;
     
     @Column(unique = true, nullable = false)
@@ -28,7 +29,7 @@ public class User {
 
     private String role; // "STUDENT" or "ADMIN"
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "LONGTEXT")
     private String profilePicBase64; // Optional Profile Pic
 
     public User() {}

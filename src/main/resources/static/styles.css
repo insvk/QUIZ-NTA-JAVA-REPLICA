@@ -155,3 +155,30 @@
 .jee-footer button { height: 42px; display: flex; align-items: center; justify-content: center; padding: 0 20px; border-radius: 4px; font-weight: 600; font-size: 13px; cursor: pointer; }
 .jee-q-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; padding: 15px; }
 .badge-jee { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 600; font-size: 13px; border-radius: 6px; cursor: pointer; }
+
+/* =========================================================
+   5. STUDENT PROFILE CARD (GOD MAXX UI)
+   ========================================================= */
+.profile-card-wrapper {
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    transition: transform 0.3s ease;
+}
+.profile-card-wrapper:hover {
+    transform: translateY(-5px);
+}
+.profile-pic-container {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto;
+    border-radius: 50%;
+    padding: 4px;
+    background: linear-gradient(135deg, #10b981, #38bdf8);
+}
+.profile-pic-container img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #25252b; /* Matches dark panel background */
+    background-color: #1e1e24; /* Matches dark main background */
+}

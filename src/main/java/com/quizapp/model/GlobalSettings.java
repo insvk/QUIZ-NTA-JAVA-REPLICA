@@ -1,0 +1,23 @@
+package com.quizapp.model;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+
+@Entity
+public class GlobalSettings {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    private String regNoPrefix = "STU-"; 
+    private Long currentRegNumber = 1000L; 
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public String getRegNoPrefix() { return regNoPrefix; }
+    public void setRegNoPrefix(String regNoPrefix) { this.regNoPrefix = regNoPrefix; }
+    public Long getCurrentRegNumber() { return currentRegNumber; }
+    public void setCurrentRegNumber(Long currentRegNumber) { this.currentRegNumber = currentRegNumber; }
+}

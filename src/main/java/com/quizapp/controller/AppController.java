@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Random;
 
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -27,12 +26,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.quizapp.model.GlobalSettings;
 import com.quizapp.model.Question;
 import com.quizapp.model.QuizAttempt;
 import com.quizapp.model.QuizTest;
 import com.quizapp.model.SystemLog;
 import com.quizapp.model.User;
 import com.quizapp.repository.AttemptRepository;
+import com.quizapp.repository.GlobalSettingsRepository;
 import com.quizapp.repository.LogRepository;
 import com.quizapp.repository.TestRepository;
 import com.quizapp.repository.UserRepository;
@@ -46,6 +47,7 @@ public class AppController {
     @Autowired private TestRepository testRepo;
     @Autowired private AttemptRepository attemptRepo;
     @Autowired private LogRepository logRepo;
+    @Autowired private GlobalSettingsRepository settingsRepo;
 
     // --- AUTHENTICATION ---
     @PostMapping("/login")
@@ -89,20 +91,21 @@ public class AppController {
             return ResponseEntity.badRequest().body("Username already exists.");
         }
         
-        // Generate Unique 7-Digit Reg No
-        String regNo;
-        Random rnd = new Random();
-        do {
-            regNo = String.format("%07d", rnd.nextInt(10000000));
-        } while (false); // In production, verify against DB to ensure no duplicates
+        // Custom Sequence Generator Logic
+        GlobalSettings settings = settingsRepo.findById(1L).orElse(new GlobalSettings());
+        String generatedRegNo = settings.getRegNoPrefix() + settings.getCurrentRegNumber();
+        
+        // Increment for the next student
+        settings.setCurrentRegNumber(settings.getCurrentRegNumber() + 1);
+        settingsRepo.save(settings);
 
-        user.setRegNo(regNo);
+        user.setRegNo(generatedRegNo);
         user.setRole("STUDENT");
         userRepo.save(user);
 
-        try { logRepo.save(new SystemLog(user.getUserId(), "REGISTER", "New student registered: " + regNo)); } catch (Exception ignored) {}
+        try { logRepo.save(new SystemLog(user.getUserId(), "REGISTER", "New student registered: " + generatedRegNo)); } catch (Exception ignored) {}
         
-        return ResponseEntity.ok(Map.of("message", "Registration Successful! Reg No: " + regNo, "regNo", regNo));
+        return ResponseEntity.ok(Map.of("message", "Registration Successful! Reg No: " + generatedRegNo, "regNo", generatedRegNo));
     }
 
     // --- ADMIN USER MANAGEMENT ---
@@ -116,10 +119,19 @@ public class AppController {
         if (userRepo.findByUserId(user.getUserId()).isPresent()) {
             return ResponseEntity.badRequest().body("User ID already exists.");
         }
-        String regNo = String.format("%07d", new Random().nextInt(10000000));
-        user.setRegNo(regNo);
+        
+        // Custom Sequence Generator Logic
+        GlobalSettings settings = settingsRepo.findById(1L).orElse(new GlobalSettings());
+        String generatedRegNo = settings.getRegNoPrefix() + settings.getCurrentRegNumber();
+        
+        // Increment for the next student
+        settings.setCurrentRegNumber(settings.getCurrentRegNumber() + 1);
+        settingsRepo.save(settings);
+
+        user.setRegNo(generatedRegNo);
         user.setRole("STUDENT");
         userRepo.save(user);
+        
         try { logRepo.save(new SystemLog("admin@java.in", "ADMIN_CREATE_USER", "Admin manually created user: " + user.getUserId())); } catch (Exception ignored) {}
         return ResponseEntity.ok("User Account Created Successfully");
     }
@@ -269,5 +281,34 @@ public class AppController {
 
         try { logRepo.save(new SystemLog(studentUserId, "SUBMIT_TEST", "Completed test: " + test.getTitle() + " with score: " + score)); } catch (Exception ignored) {}
         return ResponseEntity.ok(attempt);
+    }
+
+    // --- GOD MAXX STUDENT MANAGEMENT ENDPOINTS ---
+    
+    // Admin: Update the Registration Sequence
+    @PostMapping("/admin/settings/reg-sequence")
+    public ResponseEntity<?> updateRegSequence(@RequestBody java.util.Map<String, String> payload) {
+        GlobalSettings settings = settingsRepo.findById(1L).orElse(new GlobalSettings());
+        settings.setRegNoPrefix(payload.get("prefix"));
+        settings.setCurrentRegNumber(Long.parseLong(payload.get("startNumber")));
+        settingsRepo.save(settings);
+        return ResponseEntity.ok(java.util.Map.of("message", "Sequence Updated Successfully!"));
+    }
+
+    // Student: Fetch Full Profile Data
+    @GetMapping("/student/profile/{studentId}")
+    public ResponseEntity<?> getStudentProfile(@PathVariable Long studentId) {
+        User student = userRepo.findById(studentId).orElse(null);
+        if (student == null) {
+            return ResponseEntity.badRequest().body("Student not found.");
+        }
+        
+        return ResponseEntity.ok(java.util.Map.of(
+            "name", student.getName() != null ? student.getName() : "Unknown",
+            "email", student.getEmail() != null ? student.getEmail() : "Not Provided",
+            "regNo", student.getRegNo() != null ? student.getRegNo() : "PENDING",
+            "userId", student.getUserId(),
+            "profilePicBase64", student.getProfilePicBase64() != null ? student.getProfilePicBase64() : ""
+        ));
     }
 }
