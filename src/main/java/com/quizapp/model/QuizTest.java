@@ -22,13 +22,13 @@ public class QuizTest {
     private Long id;
 
     private String title;
-    private boolean negativeMarkingEnabled;
-    private boolean active = true;
+    private Boolean negativeMarkingEnabled = false;
+    private Boolean active = true;
 
     @Column(columnDefinition = "TEXT")
     private String instructions;
     
-    private int durationMinutes = 180;
+    private Integer durationMinutes = 180;
 
     private LocalDateTime scheduledTime; // For scheduled tests
 
@@ -41,11 +41,11 @@ public class QuizTest {
     
     private Double maxMarks = 300.0;
     private Double passingMarks = 100.0;
-    private int allowedAttempts = 1;
+    private Integer allowedAttempts = 1;
     private String resultVisibility = "INSTANT"; // INSTANT, DELAYED, MANUAL
     
-    private boolean randomizeQuestions = false;
-    private boolean randomizeOptions = false;
+    private Boolean randomizeQuestions = false;
+    private Boolean randomizeOptions = false;
 
     @Column(columnDefinition = "TEXT")
     private String assignedStudentIds; // comma-separated or JSON list, null/empty = all eligible
@@ -78,17 +78,17 @@ public class QuizTest {
     public String getTitle() { return title; } 
     public void setTitle(String title) { this.title = title; }
     
-    public boolean isNegativeMarkingEnabled() { return negativeMarkingEnabled; } 
-    public void setNegativeMarkingEnabled(boolean negativeMarkingEnabled) { this.negativeMarkingEnabled = negativeMarkingEnabled; }
+    public Boolean isNegativeMarkingEnabled() { return negativeMarkingEnabled; } 
+    public void setNegativeMarkingEnabled(Boolean negativeMarkingEnabled) { this.negativeMarkingEnabled = negativeMarkingEnabled; }
     
-    public boolean isActive() { return active; } 
-    public void setActive(boolean active) { this.active = active; }
+    public Boolean isActive() { return active; } 
+    public void setActive(Boolean active) { this.active = active; }
     
     public String getInstructions() { return instructions; } 
     public void setInstructions(String instructions) { this.instructions = instructions; }
     
-    public int getDurationMinutes() { return durationMinutes; } 
-    public void setDurationMinutes(int durationMinutes) { this.durationMinutes = durationMinutes; }
+    public Integer getDurationMinutes() { return durationMinutes; } 
+    public void setDurationMinutes(Integer durationMinutes) { this.durationMinutes = durationMinutes; }
     
     public LocalDateTime getScheduledTime() { return scheduledTime; } 
     public void setScheduledTime(LocalDateTime scheduledTime) { this.scheduledTime = scheduledTime; }
@@ -117,17 +117,17 @@ public class QuizTest {
     public Double getPassingMarks() { return passingMarks; }
     public void setPassingMarks(Double passingMarks) { this.passingMarks = passingMarks; }
 
-    public int getAllowedAttempts() { return allowedAttempts; }
-    public void setAllowedAttempts(int allowedAttempts) { this.allowedAttempts = allowedAttempts; }
+    public Integer getAllowedAttempts() { return allowedAttempts; }
+    public void setAllowedAttempts(Integer allowedAttempts) { this.allowedAttempts = allowedAttempts; }
 
     public String getResultVisibility() { return resultVisibility != null ? resultVisibility : "INSTANT"; }
     public void setResultVisibility(String resultVisibility) { this.resultVisibility = resultVisibility; }
 
-    public boolean isRandomizeQuestions() { return randomizeQuestions; }
-    public void setRandomizeQuestions(boolean randomizeQuestions) { this.randomizeQuestions = randomizeQuestions; }
+    public Boolean isRandomizeQuestions() { return randomizeQuestions; }
+    public void setRandomizeQuestions(Boolean randomizeQuestions) { this.randomizeQuestions = randomizeQuestions; }
 
-    public boolean isRandomizeOptions() { return randomizeOptions; }
-    public void setRandomizeOptions(boolean randomizeOptions) { this.randomizeOptions = randomizeOptions; }
+    public Boolean isRandomizeOptions() { return randomizeOptions; }
+    public void setRandomizeOptions(Boolean randomizeOptions) { this.randomizeOptions = randomizeOptions; }
 
     public String getAssignedStudentIds() { return assignedStudentIds; }
     public void setAssignedStudentIds(String assignedStudentIds) { this.assignedStudentIds = assignedStudentIds; }

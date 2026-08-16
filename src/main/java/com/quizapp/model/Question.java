@@ -18,7 +18,7 @@ public class Question {
     @Column(columnDefinition = "TEXT", nullable = false)
     private String questionText;
 
-    @Column(columnDefinition = "LONGTEXT")
+    @Column(columnDefinition = "TEXT")
     private String imageBase64;
 
     private String optionA;
@@ -65,9 +65,9 @@ public class Question {
     private String chapter;
     private String difficulty = "MEDIUM"; // EASY, MEDIUM, HARD
     private String status = "APPROVED"; // DRAFT, REVIEW, APPROVED, REJECTED, ARCHIVED
-    private int version = 1;
-    private boolean isDropped = false;
-    private boolean isBonus = false;
+    private Integer version = 1;
+    private Boolean isDropped = false;
+    private Boolean isBonus = false;
 
     // Default Constructor
     public Question() {}
@@ -163,12 +163,12 @@ public class Question {
     public String getStatus() { return status != null ? status : "APPROVED"; }
     public void setStatus(String status) { this.status = status; }
 
-    public int getVersion() { return version; }
-    public void setVersion(int version) { this.version = version; }
+    public Integer getVersion() { return version; }
+    public void setVersion(Integer version) { this.version = version; }
 
-    public boolean isDropped() { return isDropped; }
-    public void setDropped(boolean isDropped) { this.isDropped = isDropped; }
+    public Boolean isDropped() { return isDropped; }
+    public void setDropped(Boolean dropped) { this.isDropped = dropped; }
 
-    public boolean isBonus() { return isBonus; }
-    public void setBonus(boolean isBonus) { this.isBonus = isBonus; }
+    public Boolean isBonus() { return isBonus; }
+    public void setBonus(Boolean bonus) { this.isBonus = bonus; }
 }
