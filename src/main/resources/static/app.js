@@ -325,10 +325,12 @@ async function openAdminStudentProfile(id) {
     
     document.getElementById('editStuDbId').value = u.id;
     document.getElementById('editStuName').value = u.name || '';
+    document.getElementById('editStuRegNo').value = u.regNo || '';
     document.getElementById('editStuEmail').value = u.email || '';
     document.getElementById('editStuPhone').value = u.phone || '';
     document.getElementById('editStuDob').value = u.dob || '';
     document.getElementById('editStuGender').value = u.gender || '';
+    document.getElementById('editStuPfp').value = u.profilePicBase64 || '';
     document.getElementById('editStuPassword').value = '';
     document.getElementById('editStuDept').value = u.department || '';
     document.getElementById('editStuBatch').value = u.batch || '';
@@ -376,10 +378,12 @@ async function saveStudentProfileChanges() {
     const id = document.getElementById('editStuDbId').value;
     const payload = {
         name: document.getElementById('editStuName').value,
+        regNo: document.getElementById('editStuRegNo').value,
         email: document.getElementById('editStuEmail').value,
         phone: document.getElementById('editStuPhone').value,
         dob: document.getElementById('editStuDob').value,
         gender: document.getElementById('editStuGender').value,
+        profilePicBase64: document.getElementById('editStuPfp').value,
         password: document.getElementById('editStuPassword').value,
         department: document.getElementById('editStuDept').value,
         batch: document.getElementById('editStuBatch').value,

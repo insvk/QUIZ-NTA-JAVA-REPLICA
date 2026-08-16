@@ -228,6 +228,8 @@ public class AppController {
             if (updatedUser.getBatch() != null) user.setBatch(updatedUser.getBatch());
             if (updatedUser.getSection() != null) user.setSection(updatedUser.getSection());
             if (updatedUser.getStatus() != null) user.setStatus(updatedUser.getStatus());
+            if (updatedUser.getRegNo() != null) user.setRegNo(updatedUser.getRegNo());
+            if (updatedUser.getProfilePicBase64() != null) user.setProfilePicBase64(updatedUser.getProfilePicBase64());
             if (updatedUser.getPassword() != null && !updatedUser.getPassword().isEmpty()) user.setPassword(updatedUser.getPassword());
             
             userRepo.save(user);
