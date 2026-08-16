@@ -409,9 +409,14 @@ public class AppController {
         if (exam.getExamType() == null) exam.setExamType("JEE_MAIN");
         exam.setActive("LIVE".equalsIgnoreCase(exam.getStatus()));
 
-        testRepo.save(exam);
-        try { logRepo.save(new SystemLog("admin@java.in", "CREATE_ADVANCED_EXAM", "Created advanced exam: " + exam.getTitle() + " [" + exam.getExamType() + "]")); } catch (Exception ignored) {}
-        return ResponseEntity.ok(Map.of("message", "Advanced Exam Created Successfully!", "testId", exam.getId()));
+        try {
+            testRepo.save(exam);
+            try { logRepo.save(new SystemLog("admin@java.in", "CREATE_ADVANCED_EXAM", "Created advanced exam: " + exam.getTitle() + " [" + exam.getExamType() + "]")); } catch (Exception ignored) {}
+            return ResponseEntity.ok(Map.of("message", "Advanced Exam Created Successfully!", "testId", exam.getId()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of("error", e.getMessage() != null ? e.getMessage() : e.toString(), "cause", e.getCause() != null ? e.getCause().toString() : ""));
+        }
     }
 
     @PostMapping("/admin/exam/{id}/validate")

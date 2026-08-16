@@ -562,7 +562,10 @@ async function createTest(publishNow = false) {
     const duration = document.getElementById('testDuration').value;
     const maxMarks = document.getElementById('testMaxMarks').value;
     const scheduleEl = document.getElementById('testSchedule');
-    const scheduledTime = scheduleEl && scheduleEl.value ? scheduleEl.value : null;
+    let scheduledTime = scheduleEl && scheduleEl.value ? scheduleEl.value : null;
+    if (scheduledTime && scheduledTime.length === 16) {
+        scheduledTime += ":00"; // Append seconds so Java Jackson can parse it correctly
+    }
     const resultVisibility = document.getElementById('testResultVisibility').value;
     const assignedStudents = document.getElementById('testAssignedStudents').value.trim();
     const assignedBatches = document.getElementById('testAssignedBatches')?.value.trim() || "";
