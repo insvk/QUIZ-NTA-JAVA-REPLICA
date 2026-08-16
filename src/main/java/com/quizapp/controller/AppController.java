@@ -92,7 +92,7 @@ public class AppController {
         }
         
         // Custom Sequence Generator Logic
-        GlobalSettings settings = settingsRepo.findById(1L).orElse(new GlobalSettings());
+        GlobalSettings settings = settingsRepo.findAll().stream().findFirst().orElse(new GlobalSettings());
         String generatedRegNo = settings.getRegNoPrefix() + settings.getCurrentRegNumber();
         
         // Increment for the next student
@@ -121,7 +121,7 @@ public class AppController {
         }
         
         // Custom Sequence Generator Logic
-        GlobalSettings settings = settingsRepo.findById(1L).orElse(new GlobalSettings());
+        GlobalSettings settings = settingsRepo.findAll().stream().findFirst().orElse(new GlobalSettings());
         String generatedRegNo = settings.getRegNoPrefix() + settings.getCurrentRegNumber();
         
         // Increment for the next student
@@ -249,7 +249,7 @@ public class AppController {
         Long testId = Long.parseLong(submission.get("testId").toString());
         Long studentId = Long.parseLong(submission.get("studentId").toString());
         String studentUserId = (String) submission.get("studentUserId");
-        Map<String, String> answers = (Map<String, String>) submission.get("answers");
+        Map<String, String> answers = submission.containsKey("answers") ? (Map<String, String>) submission.get("answers") : new HashMap<>();
 
         QuizTest test = testRepo.findById(testId).orElseThrow();
         int score = 0, correct = 0, wrong = 0;
@@ -288,7 +288,7 @@ public class AppController {
     // Admin: Update the Registration Sequence
     @PostMapping("/admin/settings/reg-sequence")
     public ResponseEntity<?> updateRegSequence(@RequestBody java.util.Map<String, String> payload) {
-        GlobalSettings settings = settingsRepo.findById(1L).orElse(new GlobalSettings());
+        GlobalSettings settings = settingsRepo.findAll().stream().findFirst().orElse(new GlobalSettings());
         settings.setRegNoPrefix(payload.get("prefix"));
         settings.setCurrentRegNumber(Long.parseLong(payload.get("startNumber")));
         settingsRepo.save(settings);

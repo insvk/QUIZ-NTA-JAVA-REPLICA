@@ -532,3 +532,174 @@ async function loadProfile() {
         }
     } catch (err) { console.log("Failed to load profile details."); }
 }
+
+// ==========================================
+// 7. MISSING ADMIN FUNCTIONS
+// ==========================================
+async function deleteUser(id, userId) {
+    if (!confirm(`Are you sure you want to delete user ${userId}?`)) return;
+    try {
+        const res = await fetch(`${API_URL}/admin/users/${id}`, { method: 'DELETE' });
+        if (res.ok) {
+            alert("User deleted successfully.");
+            loadUsers();
+        } else {
+            alert("Failed to delete user.");
+        }
+    } catch (err) { alert("Network Error"); }
+}
+
+async function toggleTest(id) {
+    try {
+        const res = await fetch(`${API_URL}/admin/test/toggle/${id}`, { method: 'POST' });
+        if (res.ok) {
+            alert("Test status updated.");
+            loadAdminTests();
+        } else {
+            alert("Failed to toggle test.");
+        }
+    } catch (err) { alert("Network Error"); }
+}
+
+async function deleteAdminTest(id) {
+    if (!confirm("Are you sure you want to delete this test?")) return;
+    try {
+        const res = await fetch(`${API_URL}/admin/test/${id}`, { method: 'DELETE' });
+        if (res.ok) {
+            alert("Test deleted successfully.");
+            loadAdminTests();
+        } else {
+            alert("Failed to delete test.");
+        }
+    } catch (err) { alert("Network Error"); }
+}
+
+function addQuestionField() {
+    const container = document.getElementById('questionsBuilder');
+    if(!container) return;
+    const qCount = container.children.length + 1;
+    const qDiv = document.createElement('div');
+    qDiv.className = 'q-block';
+    qDiv.innerHTML = `
+        <h5>Question ${qCount}</h5>
+        <input type="text" class="q-text dark-input" placeholder="Question Text" style="margin-bottom: 10px;">
+        <input type="file" class="q-img" accept="image/*" style="margin-bottom: 10px; display: block; color: #a1a1aa;">
+        
+        <input type="text" class="q-optA dark-input" placeholder="Option A">
+        <input type="text" class="q-optB dark-input" placeholder="Option B">
+        <input type="text" class="q-optC dark-input" placeholder="Option C">
+        <input type="text" class="q-optD dark-input" placeholder="Option D">
+        
+        <select class="q-correct dark-input" style="margin-top: 10px;">
+            <option value="A">Correct Answer: Option A</option>
+            <option value="B">Correct Answer: Option B</option>
+            <option value="C">Correct Answer: Option C</option>
+            <option value="D">Correct Answer: Option D</option>
+        </select>
+    `;
+    container.appendChild(qDiv);
+}
+
+async function createTest() {
+    const title = document.getElementById('testTitle').value;
+    const negMark = document.getElementById('negMark').checked;
+    const duration = document.getElementById('testDuration') ? document.getElementById('testDuration').value : 180;
+    const instructions = document.getElementById('testInstructions') ? document.getElementById('testInstructions').value : '';
+    const scheduleEl = document.getElementById('testSchedule');
+    const scheduledTime = scheduleEl && scheduleEl.value ? scheduleEl.value : null;
+
+    const blocks = document.querySelectorAll('.q-block');
+
+    if (!title) return alert("Please enter a Test Title");
+
+    const questions = [];
+    for (let block of blocks) {
+        const text = block.querySelector('.q-text').value;
+        const optA = block.querySelector('.q-optA').value;
+        const optB = block.querySelector('.q-optB').value;
+        const optC = block.querySelector('.q-optC').value;
+        const optD = block.querySelector('.q-optD').value;
+        const correct = block.querySelector('.q-correct').value;
+        const imgFile = block.querySelector('.q-img').files[0];
+
+        let base64Img = null;
+        if (imgFile) {
+            base64Img = await new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.readAsDataURL(imgFile);
+            });
+        }
+
+        questions.push({
+            questionText: text,
+            imageBase64: base64Img,
+            optionA: optA,
+            optionB: optB,
+            optionC: optC,
+            optionD: optD,
+            correctAnswer: correct
+        });
+    }
+
+    const payload = { title, negativeMarkingEnabled: negMark, durationMinutes: parseInt(duration), instructions, scheduledTime, questions };
+
+    try {
+        const res = await fetch(`${API_URL}/admin/test/create`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+            alert("Test Created successfully!");
+            document.getElementById('testTitle').value = '';
+            document.getElementById('questionsBuilder').innerHTML = '';
+            switchAdminView('view-test-manage');
+            loadAdminTests();
+        } else {
+            alert("Failed to create test.");
+        }
+    } catch(err) { alert("Network Error"); }
+}
+
+function downloadXLS() {
+    window.location.href = `${API_URL}/admin/export-excel`;
+}
+
+async function loadLogs() {
+    const res = await fetch(`${API_URL}/admin/logs`);
+    const logs = await res.json();
+    const container = document.getElementById('dashLogsTable');
+    if(container) {
+        const tbody = container.getElementsByTagName('tbody')[0];
+        tbody.innerHTML = logs.map(l => `<tr><td style="color:#a1a1aa;">${new Date(l.timestamp).toLocaleDateString()}</td><td>${l.username}</td><td><span class="badge bg-purple">${l.action}</span></td></tr>`).join('');
+    }
+}
+
+async function adminCreateUser() {
+    const uid = document.getElementById('adminNewStudentId').value.trim();
+    const nameEl = document.getElementById('adminNewStudentName');
+    const name = nameEl ? nameEl.value.trim() : uid;
+    const pwd = document.getElementById('adminNewStudentPwd').value.trim();
+
+    if (!uid || !pwd) return alert("ID and Password required.");
+    
+    try {
+        const res = await fetch(`${API_URL}/admin/users/create`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: uid, name: name, password: pwd })
+        });
+        
+        if (res.ok) {
+            alert("User created successfully!");
+            loadUsers();
+            document.getElementById('adminNewStudentId').value = '';
+            document.getElementById('adminNewStudentPwd').value = '';
+            if(nameEl) nameEl.value = '';
+        } else {
+            alert("Failed to create user.");
+        }
+    } catch (err) { alert("Network Error"); }
+}
