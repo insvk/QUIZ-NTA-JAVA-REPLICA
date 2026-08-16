@@ -3,17 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Engine</title>
+    <title>CBT Examination Engine | JEE Main & Advanced</title>
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
         /* === RESET & GLOBAL === */
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body.jee-body {
             font-family: 'Inter', sans-serif;
             background-color: #f4f5f8;
@@ -37,7 +33,7 @@
             flex-shrink: 0;
         }
         .jee-title {
-            font-weight: 600;
+            font-weight: 700;
             font-size: 15px;
             color: #111827;
             white-space: nowrap;
@@ -48,7 +44,7 @@
         .jee-header-right {
             display: flex;
             align-items: center;
-            gap: 24px;
+            gap: 20px;
         }
         .jee-action-btn {
             display: flex;
@@ -57,7 +53,7 @@
             justify-content: center;
             color: #2563eb;
             font-size: 11px;
-            font-weight: 500;
+            font-weight: 600;
             cursor: pointer;
             text-align: center;
             line-height: 1.2;
@@ -68,12 +64,7 @@
             stroke: #2563eb;
             fill: none;
             stroke-width: 2;
-            margin-bottom: 4px;
-        }
-        .jee-action-btn small {
-            color: #9ca3af;
-            font-size: 9px;
-            font-weight: 400;
+            margin-bottom: 3px;
         }
         
         .jee-timer-box {
@@ -84,48 +75,31 @@
             border-left: 1px solid #e5e7eb;
             border-right: 1px solid #e5e7eb;
         }
-        .timer-label {
-            font-size: 10px;
-            color: #6b7280;
-            margin-bottom: 4px;
-        }
+        .timer-label { font-size: 10px; color: #6b7280; margin-bottom: 2px; }
         .timer-pill {
             background-color: #ef4444;
             color: #ffffff;
-            font-weight: 600;
-            padding: 4px 16px;
+            font-weight: 700;
+            padding: 4px 14px;
             border-radius: 20px;
-            font-size: 12px;
+            font-size: 13px;
             letter-spacing: 0.5px;
         }
         
-        .jee-profile {
-            text-align: right;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-        .p-name {
-            font-weight: 600;
-            font-size: 13px;
-            color: #111827;
-        }
-        .p-id {
-            font-size: 11px;
-            color: #9ca3af;
-            margin-top: 2px;
-        }
+        .jee-profile { text-align: right; display: flex; flex-direction: column; justify-content: center; }
+        .p-name { font-weight: 700; font-size: 13px; color: #111827; }
+        .p-id { font-size: 11px; color: #6b7280; margin-top: 2px; }
 
         /* === MAIN CBT LAYOUT === */
         .jee-main-layout {
             display: flex;
             flex: 1;
-            padding: 16px;
+            padding: 12px 16px;
             gap: 16px;
             height: calc(100vh - 64px);
         }
 
-        /* === LEFT PANEL (Questions) === */
+        /* === LEFT PANEL === */
         .jee-left-panel {
             flex: 1;
             display: flex;
@@ -137,196 +111,80 @@
             overflow: hidden;
         }
 
-        /* Sections Bar */
-        .jee-sections-wrapper {
-            display: flex;
-            align-items: center;
-            padding: 12px 16px;
-            background-color: #ffffff;
-            border-bottom: 1px solid #e5e7eb;
-            gap: 12px;
-        }
-        .sec-arrow {
-            color: #9ca3af;
-            cursor: pointer;
-            font-size: 14px;
-            padding: 4px;
-        }
-        .jee-sections {
-            display: flex;
-            gap: 8px;
-            overflow-x: auto;
-            scrollbar-width: none; /* Firefox */
-        }
-        .jee-sections::-webkit-scrollbar { display: none; /* Chrome */ }
-        
-        /* Default styling for section items injected by JS */
-        .jee-sections div, .jee-sections span {
-            padding: 8px 16px;
-            background-color: #f9fafb;
-            color: #4b5563;
-            font-size: 12px;
-            font-weight: 600;
-            border-radius: 4px;
-            cursor: pointer;
-            white-space: nowrap;
-            border: 1px solid #f3f4f6;
-            transition: all 0.2s ease;
-        }
-        .jee-sections div.active, .jee-sections span.active {
-            background-color: #2563eb;
-            color: #ffffff;
-            border-color: #2563eb;
-        }
-
         /* Question Area */
         .jee-question-area {
             flex: 1;
-            padding: 24px;
+            padding: 20px 24px;
             overflow-y: auto;
             position: relative;
         }
         .q-meta-header {
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 16px;
-            margin-bottom: 16px;
+            margin-bottom: 14px;
         }
-        .q-number {
-            color: #2563eb;
-            font-size: 18px;
-            font-weight: 500;
-        }
-        .q-type-badge {
-            background-color: #eff6ff;
-            color: #2563eb;
-            font-size: 12px;
-            padding: 4px 12px;
-            border-radius: 4px;
-            font-weight: 500;
-        }
-        
-        /* Custom Chevron expand icon on the right */
-        .jee-question-area::before {
-            content: '❯';
-            position: absolute;
-            top: 24px;
-            right: 24px;
-            background-color: #f3f4f6;
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 4px;
-            color: #4b5563;
-            font-size: 14px;
-            cursor: pointer;
-        }
-
-        .q-divider {
-            border-bottom: 1px solid #111827;
-            margin-bottom: 24px;
-            width: calc(100% - 40px); /* Leave room for chevron */
-        }
+        .q-number { color: #2563eb; font-size: 17px; font-weight: 700; }
+        .q-divider { border-bottom: 1px solid #e5e7eb; margin-bottom: 20px; }
         
         .q-content-box {
-            margin-bottom: 32px;
+            margin-bottom: 24px;
             font-size: 15px;
-            color: #374151;
+            color: #1e293b;
             line-height: 1.6;
         }
 
-        /* Options Box styling matching image */
-        .q-options-box {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            max-width: 800px;
-        }
+        /* Options Box */
+        .q-options-box { display: flex; flex-direction: column; gap: 10px; max-width: 850px; }
         .jee-opt-row {
             display: flex;
             align-items: center;
-            padding: 14px 20px;
-            border: 1px solid #f3f4f6;
+            padding: 12px 18px;
+            border: 1px solid #e2e8f0;
             background-color: #ffffff;
             border-radius: 8px;
             cursor: pointer;
-            gap: 20px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            gap: 16px;
             transition: border-color 0.2s ease;
         }
-        .jee-opt-row:hover {
-            border-color: #d1d5db;
-        }
-        
-        /* Custom Light Blue Radio Buttons */
+        .jee-opt-row:hover { border-color: #94a3b8; background-color: #f8fafc; }
         .jee-opt-row input[type="radio"] {
-            appearance: none;
-            -webkit-appearance: none;
-            width: 24px;
-            height: 24px;
-            border: 2px solid #bfdbfe;
-            background-color: #eff6ff;
-            border-radius: 50%;
-            outline: none;
+            width: 20px;
+            height: 20px;
+            accent-color: #2563eb;
             cursor: pointer;
-            position: relative;
             flex-shrink: 0;
-            margin: 0;
-        }
-        .jee-opt-row input[type="radio"]:checked {
-            background-color: #3b82f6;
-            border-color: #3b82f6;
-        }
-        .jee-opt-row input[type="radio"]:checked::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 8px;
-            height: 8px;
-            background-color: white;
-            border-radius: 50%;
         }
 
-        /* Footer Action Buttons */
+        /* Footer */
         .jee-footer {
             border-top: 1px solid #e5e7eb;
-            padding: 16px 24px;
+            padding: 14px 20px;
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: 12px;
             background-color: #ffffff;
         }
-        .footer-row-top, .footer-row-bottom {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+        .footer-row-top, .footer-row-bottom { display: flex; justify-content: space-between; align-items: center; }
         .jee-footer button {
             cursor: pointer;
             font-family: 'Inter', sans-serif;
-            font-weight: 600;
-            font-size: 13px;
+            font-weight: 700;
+            font-size: 12px;
             border-radius: 4px;
-            padding: 10px 24px;
+            padding: 9px 20px;
             border: none;
             transition: opacity 0.2s;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-        .jee-footer button:hover {
-            opacity: 0.9;
-        }
         .btn-save-next { background-color: #10b981; color: #ffffff; }
         .btn-save-mark { background-color: #5b4b8a; color: #ffffff; }
         .btn-clear { background-color: transparent; border: 1px solid #3b82f6 !important; color: #3b82f6; }
         .btn-nav { background-color: transparent; border: 1px solid #3b82f6 !important; color: #3b82f6; }
-        .btn-submit { background-color: #10b981; color: #ffffff; }
+        .btn-submit { background-color: #0284c7; color: #ffffff; font-size: 13px !important; padding: 10px 24px !important; }
 
-        /* === RIGHT PANEL (Palette) === */
+        /* === RIGHT PANEL === */
         .jee-right-panel {
             width: 320px;
             display: flex;
@@ -335,139 +193,67 @@
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.04);
             border: 1px solid #e5e7eb;
-            padding: 24px;
+            padding: 20px;
             overflow-y: auto;
             flex-shrink: 0;
         }
-        .palette-header {
-            font-size: 12px;
-            font-weight: 600;
-            color: #374151;
-            margin-bottom: 16px;
-            letter-spacing: 0.5px;
-        }
+        .palette-header { font-size: 12px; font-weight: 700; color: #374151; margin-bottom: 12px; letter-spacing: 0.5px; }
         
         .palette-legend-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 12px 8px;
-            margin-bottom: 32px;
+            gap: 8px;
+            margin-bottom: 20px;
             font-size: 11px;
             color: #4b5563;
         }
-        .leg-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+        .leg-item { display: flex; align-items: center; gap: 8px; }
         .badge {
-            width: 26px;
-            height: 26px;
+            width: 24px;
+            height: 24px;
             display: flex;
             align-items: center;
             justify-content: center;
             border-radius: 4px;
-            font-size: 12px;
+            font-size: 11px;
             color: white;
-            font-weight: 500;
+            font-weight: 600;
             position: relative;
             flex-shrink: 0;
         }
-        
-        /* Legend Status Colors */
-        .badge-nv { background-color: #f9fafb; border: 1px solid #d1d5db; color: #374151; }
+        .badge-nv { background-color: #f1f5f9; border: 1px solid #cbd5e1; color: #334155; }
         .badge-na { background-color: #ef4444; }
         .badge-ans { background-color: #10b981; }
         .badge-mr { background-color: #5b4b8a; }
         .badge-amr { background-color: #5b4b8a; }
         .badge-amr::after {
-            content: '✔';
-            position: absolute;
-            bottom: -4px;
-            right: -4px;
-            background-color: #10b981;
-            color: white;
-            font-size: 8px;
-            width: 14px;
-            height: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            border: 1px solid white;
+            content: '✔'; position: absolute; bottom: -3px; right: -3px; background-color: #10b981;
+            color: white; font-size: 7px; width: 12px; height: 12px; display: flex; align-items: center;
+            justify-content: center; border-radius: 50%; border: 1px solid white;
         }
 
-        /* Question Palette Grid */
-        .jee-q-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 10px;
-        }
-        
-        /* Default styling for JS injected grid buttons */
-        .jee-q-grid button, .jee-q-grid div {
-            width: 100%;
-            aspect-ratio: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 4px;
-            font-size: 13px;
-            font-weight: 500;
-            cursor: pointer;
-            border: 1px solid #d1d5db;
-            background-color: #f9fafb;
-            color: #374151;
-            transition: filter 0.2s;
-        }
-        .jee-q-grid button:hover, .jee-q-grid div:hover {
-            filter: brightness(0.95);
-        }
+        .jee-q-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+        .jee-q-grid .badge { width: 100%; height: 38px; cursor: pointer; border-radius: 6px; font-size: 13px; }
 
-        /* Class overrides to match legend colors (can be toggled by JS) */
-        .jee-q-grid .q-nv { background-color: #f9fafb; border: 1px solid #d1d5db; color: #374151; }
-        .jee-q-grid .q-na { background-color: #ef4444; border: none; color: white; }
-        .jee-q-grid .q-ans { background-color: #10b981; border: none; color: white; }
-        .jee-q-grid .q-mr { background-color: #5b4b8a; border: none; color: white; }
-        .jee-q-grid .q-amr { background-color: #5b4b8a; border: none; color: white; position: relative; }
-        .jee-q-grid .q-amr::after {
-            content: '✔'; position: absolute; bottom: -4px; right: -4px; background-color: #10b981; color: white;
-            font-size: 8px; width: 12px; height: 12px; display: flex; align-items: center; justify-content: center;
-            border-radius: 50%; border: 1px solid white;
-        }
-
-        /* === MODAL === */
-        .jee-modal {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(0,0,0,0.5);
-            display: flex; align-items: center; justify-content: center; z-index: 1000;
-        }
-        .jee-modal.hidden { display: none; }
-        .jee-modal-content {
-            background: #fff; padding: 32px; border-radius: 8px; width: 600px;
-            max-width: 90%; max-height: 80vh; overflow-y: auto;
-        }
-        .jee-modal-content h2 { margin-bottom: 16px; color: #111827; }
+        /* Summary Table in Submit Modal */
+        .submit-summary-table { width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 13px; }
+        .submit-summary-table th, .submit-summary-table td { padding: 10px 12px; border: 1px solid #e2e8f0; text-align: left; }
+        .submit-summary-table th { background: #f8fafc; font-weight: 600; }
     </style>
 </head>
 <body class="jee-body">
 
     <!-- TOP HEADER -->
     <header class="jee-header">
-        <div class="jee-title" id="examMainTitle">Loading Exam...</div>
+        <div class="jee-title" id="examMainTitle">Loading CBT Exam...</div>
         
         <div class="jee-header-right">
-            <div class="jee-action-btn">
-                <svg viewBox="0 0 24 24"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.92-10.42l5.07 5.07"/></svg>
-                <span>Sync<br><small>Last Sync : Just now</small></span>
+            <div id="autosaveIndicator" class="autosave-pill">
+                <span>☁️ Synced to Server</span>
             </div>
             <div class="jee-action-btn" onclick="toggleInstructions()">
                 <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
                 <span>Instructions</span>
-            </div>
-            <div class="jee-action-btn">
-                <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-                <span>Question Paper</span>
             </div>
             
             <div class="jee-timer-box">
@@ -477,17 +263,37 @@
             
             <div class="jee-profile">
                 <div id="studentBadgeName" class="p-name">STUDENT</div>
-                <div id="studentBadgeId" class="p-id">0000000</div>
+                <div id="studentBadgeId" class="p-id">REG: 0000000</div>
             </div>
         </div>
     </header>
 
-    <!-- INSTRUCTIONS MODAL (Hidden by default) -->
+    <!-- INSTRUCTIONS MODAL -->
     <div id="instructionsModal" class="jee-modal hidden">
         <div class="jee-modal-content">
-            <h2>Exam Instructions</h2>
-            <div id="instructionContent" class="instruction-text"></div>
-            <button class="btn-submit" onclick="toggleInstructions()" style="margin-top: 20px;">Close & Return to Exam</button>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h2 style="margin:0;">Examination Instructions</h2>
+                <button class="btn-clear" onclick="toggleInstructions()">✕ Close</button>
+            </div>
+            <div id="instructionContent" class="instruction-text" style="font-size:14px; line-height:1.6; color:#374151;"></div>
+            <button class="btn-save-next" onclick="toggleInstructions()" style="margin-top: 20px; width:100%;">Return to Exam</button>
+        </div>
+    </div>
+
+    <!-- SUBMIT CONFIRMATION MODAL -->
+    <div id="submitSummaryModal" class="jee-modal hidden">
+        <div class="jee-modal-content" style="max-width:550px;">
+            <h2 style="color:#111827; margin-bottom:8px;">Exam Submission Summary</h2>
+            <p style="color:#6b7280; font-size:13px;">Please review your attempt statistics before final submission.</p>
+            
+            <div id="submitSummaryStats"></div>
+
+            <p style="color:#dc2626; font-size:12px; font-weight:600; margin-top:10px;">⚠️ Warning: Once submitted, you cannot change your answers.</p>
+
+            <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:20px;">
+                <button class="btn-clear" onclick="closeSubmitModal()">Continue Exam</button>
+                <button class="btn-save-next" onclick="executeFinalSubmit()">Confirm Final Submit</button>
+            </div>
         </div>
     </div>
 
@@ -497,35 +303,36 @@
         <!-- LEFT PANEL (Questions) -->
         <div class="jee-left-panel">
             
-            <!-- Sections Bar -->
-            <div class="jee-sections-wrapper">
-                <span class="sec-arrow">❮</span>
-                <div class="jee-sections" id="sectionsBar">
-                    <!-- JS will populate sections here -->
-                </div>
-                <span class="sec-arrow">❯</span>
-            </div>
+            <!-- Dynamic Subject Navigation Bar -->
+            <div class="subject-nav-bar" id="subjectNavBar"></div>
+
+            <!-- Dynamic Section Pills Bar -->
+            <div class="sec-pill-bar" id="sectionPillsBar"></div>
 
             <!-- Question Area -->
             <div class="jee-question-area">
                 <div class="q-meta-header">
-                    <span class="q-number" id="qNumberDisplay">Question 1</span>
-                    <span class="q-type-badge">Single Select Type</span>
+                    <div>
+                        <span class="q-number" id="qNumberDisplay">Question 1</span>
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                        <span class="q-badge-type" id="qTypeDisplay">SINGLE CORRECT</span>
+                        <span class="q-badge-marks" id="qMarksDisplay">+4 / -1</span>
+                    </div>
                 </div>
                 
                 <div class="q-divider"></div>
                 
+                <!-- Passage container for Comprehension questions -->
+                <div id="passageContainer" style="display:none; background:#f8fafc; border:1px solid #cbd5e1; border-radius:6px; padding:15px; margin-bottom:15px; font-size:14px; line-height:1.5;"></div>
+
                 <div class="q-content-box">
                     <div id="questionText" class="q-text"></div>
                     <div id="questionImageContainer"></div>
                 </div>
                 
-                <div class="q-options-box">
-                    <label class="jee-opt-row"><input type="radio" name="examOpt" value="A"> <span id="optAText"></span></label>
-                    <label class="jee-opt-row"><input type="radio" name="examOpt" value="B"> <span id="optBText"></span></label>
-                    <label class="jee-opt-row"><input type="radio" name="examOpt" value="C"> <span id="optCText"></span></label>
-                    <label class="jee-opt-row"><input type="radio" name="examOpt" value="D"> <span id="optDText"></span></label>
-                </div>
+                <!-- Dynamic Input Container (MCQ, MSQ, NAT keypad, Matrix Match) -->
+                <div id="dynamicAnswerContainer"></div>
             </div>
 
             <!-- Footer Action Buttons -->
@@ -542,7 +349,7 @@
                         <button class="btn-nav" onclick="prevQuestion()">&#8592; BACK</button>
                         <button class="btn-nav" onclick="nextQuestion()">NEXT &#8594;</button>
                     </div>
-                    <button class="btn-submit" onclick="submitExamFinal()">SUBMIT</button>
+                    <button class="btn-submit" onclick="openSubmitModal()">SUBMIT EXAM</button>
                 </div>
             </div>
         </div>
@@ -559,10 +366,8 @@
                 <div class="leg-item" style="grid-column: span 2;"><div class="badge badge-amr" id="count-amr">0</div> Answered & Marked for Review</div>
             </div>
 
-            <div class="palette-header" style="margin-top: 8px;">CHOOSE A QUESTION</div>
-            <div class="jee-q-grid" id="questionGrid">
-                <!-- JS will populate grid here -->
-            </div>
+            <div class="palette-header" style="margin-top: 8px;">QUESTION PALETTE</div>
+            <div class="jee-q-grid" id="questionGrid"></div>
         </div>
 
     </div>
@@ -573,7 +378,7 @@
             const name = localStorage.getItem('name') || localStorage.getItem('userId') || 'STUDENT';
             const regNo = localStorage.getItem('regNo') || 'N/A';
             document.getElementById('studentBadgeName').innerText = name.toUpperCase();
-            document.getElementById('studentBadgeId').innerText = regNo;
+            document.getElementById('studentBadgeId').innerText = "REG: " + regNo;
             if (typeof loadExamEngine === "function") {
                 loadExamEngine();
             }

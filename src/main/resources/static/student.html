@@ -27,6 +27,10 @@
                 <a href="#" class="menu-item" onclick="switchView('view-results', this); loadStudentAttempts();" title="My Results">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
                 </a>
+                <a href="#" class="menu-item" onclick="switchView('view-notifications', this); loadStudentNotifications();" title="Notifications" style="position:relative;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                    <span id="notifBadge" style="position:absolute; top:8px; right:8px; background:#f43f5e; color:#fff; font-size:10px; font-weight:bold; width:16px; height:16px; border-radius:50%; display:none; justify-content:center; align-items:center;"></span>
+                </a>
             </div>
             <div class="sidebar-bottom">
                 <a href="#" class="menu-item" onclick="logout()" title="Logout">
@@ -42,6 +46,7 @@
             <nav class="dark-navbar">
                 <div class="nav-left">
                     <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
+                    <span style="font-size: 14px; font-weight: 600; color: #10b981; margin-left: 10px;">STUDENT CBT PORTAL</span>
                 </div>
                 <div class="nav-right">
                     <div class="admin-profile" style="display: flex; align-items: center; gap: 12px;">
@@ -59,38 +64,117 @@
                 
                 <!-- 1. DASHBOARD VIEW (Tests) -->
                 <div id="view-dashboard" class="admin-view active">
-                    <h2 class="page-title mb-20">Available Examinations</h2>
+                    <div class="page-header-flex mb-20" style="display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <h2 class="page-title" style="margin:0;">Dashboard Overview</h2>
+                            <p class="page-subtitle" style="margin:5px 0 0 0;">Welcome back. Here is your academic summary.</p>
+                        </div>
+                    </div>
                     
-                    <h3 class="panel-title">Live Tests</h3>
+                    <div class="summary-row mb-20" id="studentSummaryCards">
+                        <div class="sum-box">
+                            <h2 id="sumTotalExams" style="color:#fff;">0</h2>
+                            <p>Exams Attempted</p>
+                        </div>
+                        <div class="sum-box">
+                            <h2 id="sumAvgScore" style="color:#38bdf8;">0</h2>
+                            <p>Average Score</p>
+                        </div>
+                        <div class="sum-box">
+                            <h2 id="sumHighScore" style="color:#10b981;">0</h2>
+                            <p>Highest Score</p>
+                        </div>
+                    </div>
+
+                    <h3 class="panel-title">Available Examinations & Live Tests</h3>
                     <div class="form-grid mb-20" id="liveTestsContainer"></div>
 
-                    
-                    <h3 class="panel-title mt-20">Upcoming Tests</h3>
+                    <h3 class="panel-title mt-20">Upcoming Scheduled Tests</h3>
                     <div class="form-grid" id="upcomingTestsContainer"></div>
                 </div>
 
                 <!-- 2. MY PROFILE VIEW -->
                 <div id="view-profile" class="admin-view">
-                    <h2 class="page-title mb-20">My Profile</h2>
-                    <div class="dark-panel profile-card-wrapper" style="max-width: 500px; margin: 0 auto; text-align: center;">
-                        <div class="profile-pic-container">
-                            <img id="profileDetailedPic" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTBhYWJmIiBzdHJva2Utd2lkdGg9IjIiPjxwYXRoIGQ9Ik0yMCAyMXYtMmE0IDQgMCAwIDAtNC00SDhhNCA0IDAgMCAwLTQgNHYyIj48L3BhdGg+PGNpcmNsZSBjeD0iMTIiIGN5PSI3IiByPSI0Ij48L2NpcmNsZT48L3N2Zz4=" alt="Profile">
-                        </div>
-                        <h2 id="profileDetailedName" style="color: #fff; margin: 15px 0 5px 0; font-size: 24px;">STUDENT NAME</h2>
-                        <span class="badge bg-green" id="profileDetailedRegNo" style="font-size:12px; padding:4px 12px; border-radius:20px;">REG: 000000</span>
+                    <h2 class="page-title mb-20">My Profile & Academic Record</h2>
+                    <div style="display:flex; gap:20px; flex-wrap:wrap;">
                         
-                        <div style="text-align: left; background: #1e1e24; border-radius: 8px; padding: 20px; border: 1px solid #3f3f46; margin-top: 25px;">
-                            <p style="margin: 0 0 10px 0; font-size: 13px; color: #a1a1aa;"><strong>Email Address:</strong> <br><span id="profileDetailedEmail" style="color: #c9d1d9; font-size: 15px;">student@email.com</span></p>
-                            <p style="margin: 0; font-size: 13px; color: #a1a1aa;"><strong>System Username:</strong> <br><span id="profileDetailedUserId" style="color: #c9d1d9; font-size: 15px;">username123</span></p>
+                        <!-- Left: Profile Identity -->
+                        <div class="dark-panel" style="flex:1; min-width:300px; text-align:center;">
+                            <div class="profile-pic-container" style="margin: 0 auto;">
+                                <img id="profileDetailedPic" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTBhYWJmIiBzdHJva2Utd2lkdGg9IjIiPjxwYXRoIGQ9Ik0yMCAyMXYtMmE0IDQgMCAwIDAtNC00SDhhNCA0IDAgMCAwLTQgNHYyIj48L3BhdGg+PGNpcmNsZSBjeD0iMTIiIGN5PSI3IiByPSI0Ij48L2NpcmNsZT48L3N2Zz4=" alt="Profile">
+                            </div>
+                            <h2 id="profileDetailedName" style="color:#fff; margin:15px 0 5px 0; font-size:24px;">NAME</h2>
+                            <span class="badge bg-green" id="profileDetailedRegNo" style="font-size:12px;">REG: 000000</span>
+                            <span class="badge bg-purple" id="profileDetailedBatch" style="font-size:12px;">BATCH</span>
+                            
+                            <div style="text-align:left; background:#1e1e24; border-radius:8px; padding:15px; border:1px solid #3f3f46; margin-top:20px;">
+                                <h4 style="color:#a1a1aa; font-size:11px; text-transform:uppercase; margin-bottom:10px; border-bottom:1px solid #3f3f46; padding-bottom:5px;">Contact Info</h4>
+                                <p style="margin:5px 0; font-size:13px; color:#c9d1d9;"><strong style="color:#8b949e;">Email:</strong> <span id="profileDetailedEmail">-</span></p>
+                                <p style="margin:5px 0; font-size:13px; color:#c9d1d9;"><strong style="color:#8b949e;">Phone:</strong> <span id="profileDetailedPhone">-</span></p>
+                                <p style="margin:5px 0; font-size:13px; color:#c9d1d9;"><strong style="color:#8b949e;">DOB:</strong> <span id="profileDetailedDob">-</span></p>
+                                <p style="margin:5px 0; font-size:13px; color:#c9d1d9;"><strong style="color:#8b949e;">Gender:</strong> <span id="profileDetailedGender">-</span></p>
+                            </div>
                         </div>
+
+                        <!-- Right: Academic Details -->
+                        <div class="dark-panel" style="flex:2; min-width:400px;">
+                            <h3 class="panel-title" style="margin-bottom:15px;">Academic Information</h3>
+                            <div class="form-grid mb-20" style="gap:15px;">
+                                <div style="background:#1e1e24; padding:12px; border-radius:6px; border:1px solid #3f3f46;">
+                                    <div style="font-size:11px; color:#a1a1aa;">Department</div>
+                                    <div style="font-size:16px; color:#fff; font-weight:600;" id="profileDetailedDept">-</div>
+                                </div>
+                                <div style="background:#1e1e24; padding:12px; border-radius:6px; border:1px solid #3f3f46;">
+                                    <div style="font-size:11px; color:#a1a1aa;">Course / Program</div>
+                                    <div style="font-size:16px; color:#fff; font-weight:600;" id="profileDetailedCourse">-</div>
+                                </div>
+                                <div style="background:#1e1e24; padding:12px; border-radius:6px; border:1px solid #3f3f46;">
+                                    <div style="font-size:11px; color:#a1a1aa;">Section</div>
+                                    <div style="font-size:16px; color:#fff; font-weight:600;" id="profileDetailedSection">-</div>
+                                </div>
+                                <div style="background:#1e1e24; padding:12px; border-radius:6px; border:1px solid #3f3f46;">
+                                    <div style="font-size:11px; color:#a1a1aa;">Account Status</div>
+                                    <div style="font-size:16px; color:#10b981; font-weight:600;" id="profileDetailedStatus">ACTIVE</div>
+                                </div>
+                            </div>
+                            
+                            <h3 class="panel-title" style="margin-bottom:15px;">Guardian Info</h3>
+                            <div style="background:#1e1e24; border-radius:8px; padding:15px; border:1px solid #3f3f46;">
+                                <p style="margin:5px 0; font-size:14px; color:#c9d1d9;"><strong style="color:#8b949e;">Name:</strong> <span id="profileDetailedGuardian">-</span></p>
+                                <p style="margin:5px 0; font-size:14px; color:#c9d1d9;"><strong style="color:#8b949e;">Contact:</strong> <span id="profileDetailedGuardianContact">-</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. NOTIFICATIONS VIEW -->
+                <div id="view-notifications" class="admin-view">
+                    <div class="flex-between mb-20">
+                        <h2 class="page-title">Notification Center</h2>
+                        <button onclick="loadStudentNotifications()" class="btn-dark">Refresh</button>
+                    </div>
+                    <div class="dark-panel" id="notificationsContainer" style="max-width:800px; margin:0 auto; padding:0; background:transparent; border:none;">
+                        <!-- dynamic notifications -->
                     </div>
                 </div>
 
                 <!-- 3. MY RESULTS VIEW -->
                 <div id="view-results" class="admin-view">
-                    <h2 class="page-title mb-20">My Performance History</h2>
+                    <h2 class="page-title mb-20">My Performance & Examination History</h2>
                     <div class="dark-panel">
                         <div class="table-responsive" id="studentAttemptsTable"></div>
+                    </div>
+                </div>
+
+                <!-- 4. DETAILED RESULT ANALYSIS MODAL -->
+                <div id="studentResultModal" class="jee-modal hidden">
+                    <div class="jee-modal-content" style="background:#1e1e24; color:#fff; border:1px solid #3f3f46; max-width:800px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                            <h2 id="resModalTitle" style="color:#fff; margin:0;">Detailed Scorecard</h2>
+                            <button onclick="closeStudentResultModal()" class="btn-dark">✕ Close</button>
+                        </div>
+                        
+                        <div id="studentScorecardContent"></div>
                     </div>
                 </div>
 
