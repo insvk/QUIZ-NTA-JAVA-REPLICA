@@ -259,7 +259,7 @@ function renderUsersTable(users) {
             <td><span style="font-size:12px; color:#a1a1aa;">${u.department || '-'} / ${u.batch || '-'}</span></td>
             <td><span class="badge ${statusBadge}">${u.status || 'ACTIVE'}</span></td>
             <td style="display:flex; gap:6px;">
-                <button onclick="openAdminStudentProfile(${u.id})" class="btn-dark" style="color:#38bdf8; border-color:#38bdf8; padding:4px 8px; font-size:11px;">Profile</button>
+                <button onclick="openAdminStudentProfile(${u.id})" class="btn-dark" style="color:#38bdf8; border-color:#38bdf8; padding:4px 8px; font-size:11px;">Edit / Profile</button>
                 <button onclick="deleteUser(${u.id}, '${u.userId}')" class="btn-dark" style="color:#f43f5e; border-color:#f43f5e; padding:4px 8px; font-size:11px;">Archive/Del</button>
             </td>
         </tr>`;
@@ -325,6 +325,11 @@ async function openAdminStudentProfile(id) {
     
     document.getElementById('editStuDbId').value = u.id;
     document.getElementById('editStuName').value = u.name || '';
+    document.getElementById('editStuEmail').value = u.email || '';
+    document.getElementById('editStuPhone').value = u.phone || '';
+    document.getElementById('editStuDob').value = u.dob || '';
+    document.getElementById('editStuGender').value = u.gender || '';
+    document.getElementById('editStuPassword').value = '';
     document.getElementById('editStuDept').value = u.department || '';
     document.getElementById('editStuBatch').value = u.batch || '';
     document.getElementById('editStuSection').value = u.section || '';
@@ -371,6 +376,11 @@ async function saveStudentProfileChanges() {
     const id = document.getElementById('editStuDbId').value;
     const payload = {
         name: document.getElementById('editStuName').value,
+        email: document.getElementById('editStuEmail').value,
+        phone: document.getElementById('editStuPhone').value,
+        dob: document.getElementById('editStuDob').value,
+        gender: document.getElementById('editStuGender').value,
+        password: document.getElementById('editStuPassword').value,
         department: document.getElementById('editStuDept').value,
         batch: document.getElementById('editStuBatch').value,
         section: document.getElementById('editStuSection').value,

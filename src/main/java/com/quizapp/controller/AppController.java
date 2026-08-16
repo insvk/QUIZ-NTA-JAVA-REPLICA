@@ -228,6 +228,7 @@ public class AppController {
             if (updatedUser.getBatch() != null) user.setBatch(updatedUser.getBatch());
             if (updatedUser.getSection() != null) user.setSection(updatedUser.getSection());
             if (updatedUser.getStatus() != null) user.setStatus(updatedUser.getStatus());
+            if (updatedUser.getPassword() != null && !updatedUser.getPassword().isEmpty()) user.setPassword(updatedUser.getPassword());
             
             userRepo.save(user);
             try { logRepo.save(new SystemLog("admin@java.in", "UPDATE_USER", "Updated user ID: " + id)); } catch (Exception ignored) {}

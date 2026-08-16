@@ -8,9 +8,9 @@
    ========================================================= */
 .member-login-body { margin: 0; padding: 0; font-family: 'Poppins', sans-serif; background-color: #ffffff !important; height: 100vh; width: 100vw; display: flex; align-items: center; justify-content: center; overflow: hidden; }
 .top-right-logo { position: absolute; top: 30px; right: 40px; height: 70px; width: auto; object-fit: contain; z-index: 1000; }
-.auth-wrapper { width: 100%; max-width: 1000px; height: auto; min-height: 500px; display: flex; flex-direction: row; align-items: center; background: #fff; }
-.auth-left-panel { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; }
-.graphic-circle { width: 350px; height: 350px; background-color: #f4f5f7; border-radius: 50%; display: flex; align-items: center; justify-content: center; position: relative; }
+.auth-wrapper { width: 100%; max-width: 1000px; height: auto; min-height: 500px; display: flex; flex-direction: row; align-items: center; justify-content: center; position: relative; background: transparent; }
+.auth-left-panel { display: flex; align-items: center; justify-content: center; position: absolute; left: 5%; z-index: 1; }
+.auth-right-panel { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; position: relative; z-index: 2; background: #fff; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
 .laptop-svg { z-index: 10; margin-top: 20px; }
 .deco-shape { position: absolute; }
 .circle-blue { width: 12px; height: 12px; border: 3px solid #38bdf8; border-radius: 50%; top: 15%; left: -10%; }
@@ -18,7 +18,6 @@
 .triangle-green-small { width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-bottom: 10px solid #84cc16; bottom: 20%; left: -5%; transform: rotate(-20deg); }
 .circle-blue-small { width: 8px; height: 8px; border: 2px solid #38bdf8; border-radius: 50%; bottom: 15%; right: 5%; }
 .square-grey { width: 8px; height: 8px; border: 2px solid #e5e7eb; top: 10%; right: 20%; }
-.auth-right-panel { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; position: relative; }
 .form-box { width: 100%; max-width: 320px; display: flex; flex-direction: column; align-items: center; text-align: center; }
 .form-box.hidden { display: none !important; }
 .form-box h2 { font-size: 26px; font-weight: 700; color: #1f2937; margin: 0 0 35px 0; letter-spacing: 0.5px; text-align: center; }
@@ -80,7 +79,8 @@
 .header-actions { display: flex; gap: 10px; }
 
 /* Panels & Summary */
-.dark-panel { background-color: #25252b; border: 1px solid #33333b; border-radius: 8px; padding: 25px; margin-bottom: 20px; }
+.dark-panel { background-color: #25252b; border: 1px solid #33333b; border-radius: 8px; padding: 25px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+.dark-panel.mt-20 { margin-top: 20px; }
 .panel-title { font-size: 15px; font-weight: 500; color: #fff; margin: 0 0 20px 0; }
 .summary-row { display: flex; flex-wrap: wrap; border: 1px solid #3f3f46; border-radius: 6px; width: fit-content; background: #1e1e24; }
 .sum-box { padding: 12px 25px; border-right: 1px solid #3f3f46; display: flex; flex-direction: column; align-items: center; justify-content: center; }
@@ -464,4 +464,14 @@
     font-size: 11px;
     opacity: 0.8;
     text-transform: uppercase;
-}
+}/* Utility Classes for Spacing */
+.mt-10 { margin-top: 10px !important; }
+.mt-20 { margin-top: 20px !important; }
+.mb-10 { margin-bottom: 10px !important; }
+.mb-20 { margin-bottom: 20px !important; }
+.mb-30 { margin-bottom: 30px !important; }
+.ml-10 { margin-left: 10px !important; }
+.mr-10 { margin-right: 10px !important; }
+.flex-between { display: flex; justify-content: space-between; align-items: center; }
+.gap-10 { gap: 10px; }
+.gap-20 { gap: 20px; }

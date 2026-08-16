@@ -267,8 +267,27 @@
                                 <h4 style="color:#fff; margin-bottom:15px; border-bottom:1px solid #27272a; padding-bottom:10px;">Edit Identity & Academics</h4>
                                 <input type="hidden" id="editStuDbId">
                                 
-                                <label class="profile-lbl">Name</label>
-                                <input type="text" id="editStuName" class="dark-input mb-10">
+                                <div class="form-grid mb-10">
+                                    <div><label class="profile-lbl">Name</label><input type="text" id="editStuName" class="dark-input"></div>
+                                    <div><label class="profile-lbl">Email</label><input type="email" id="editStuEmail" class="dark-input"></div>
+                                </div>
+                                
+                                <div class="form-grid mb-10">
+                                    <div><label class="profile-lbl">Phone Number</label><input type="text" id="editStuPhone" class="dark-input"></div>
+                                    <div><label class="profile-lbl">Date of Birth</label><input type="date" id="editStuDob" class="dark-input"></div>
+                                </div>
+
+                                <div class="form-grid mb-10">
+                                    <div><label class="profile-lbl">Gender</label>
+                                        <select id="editStuGender" class="dark-input">
+                                            <option value="">Select Gender</option>
+                                            <option value="Male">Male</option>
+                                            <option value="Female">Female</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </div>
+                                    <div><label class="profile-lbl">New Password (Leave blank to keep)</label><input type="password" id="editStuPassword" class="dark-input" placeholder="Enter new password"></div>
+                                </div>
                                 
                                 <div class="form-grid mb-10">
                                     <div><label class="profile-lbl">Department</label><input type="text" id="editStuDept" class="dark-input"></div>
